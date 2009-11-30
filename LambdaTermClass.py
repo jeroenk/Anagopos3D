@@ -1,4 +1,7 @@
 class LambdaTerm:
+    def __init__(self):
+        raise Exception("Not implemented")
+
     def isAbs(self):
         return False
 
@@ -10,6 +13,9 @@ class LambdaTerm:
 
     def isRedex(self):
         return False
+
+    def getRedexPositions(self):
+        return []
 
     def isEqual(self, term):
         return False
@@ -32,6 +38,13 @@ class LambdaAbs(LambdaTerm):
 
     def isAbs(self):
         return True
+
+    def getRedexPositions(self):
+        def prepend_zero(position):
+            return [0] + position
+
+        positions = map(prepend_zero, self.subterm.getRedexPositions())
+        return positions
 
     def isEqual(self, term):
         if not term.isAbs():
@@ -69,6 +82,19 @@ class LambdaApp(LambdaTerm):
 
     def isRedex(self):
         return self.left.isAbs()
+
+    def getRedexPositions(self):
+        def prepend_one(position):
+            return [1] + position
+
+        def prepend_two(position):
+            return [2] + position
+
+        left_positions  = map(prepend_one, self.left.getRedexPositions())
+        right_positions = map(prepend_two, self.right.getRedexPositions())
+        top_position    = [[]] if self.isRedex() else []
+        positions       = top_position + left_positions + right_positions
+        return positions
 
     def isEqual(self, term):
         if not term.isApp():
@@ -126,3 +152,15 @@ def test():
     print ab.isRedex()
 
     print t1.isEqual(t2)
+
+    t3 = LambdaApp(t1, t2)
+
+    print t3.toString()
+
+    print t2.getRedexPositions()
+    print t3.getRedexPositions()
+
+    t4 = LambdaApp(t3, LambdaVar(1))
+
+    print t4.toString()
+    print t4.getRedexPositions()
