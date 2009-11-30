@@ -1,0 +1,3 @@
+import LambdaTermClass
+
+LambdaTermClass.test()
