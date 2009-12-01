@@ -130,13 +130,6 @@ class LambdaApp(LambdaTerm):
         right = self.right.renumber(i, j)
         return LambdaApp(left, right)
 
-    def isEqual(self, term):
-        if not term.isApp():
-            return False
-
-        return self.left.isEqual(term.getLeft()) \
-            and self.right.isEqual(term.getRight())
-
     def reduce(self, position):
         if position == []:
             if not self.isRedex():
@@ -154,6 +147,13 @@ class LambdaApp(LambdaTerm):
             return LambdaApp(left, right)
         else:
             raise Exception("Invalid operation")
+
+    def isEqual(self, term):
+        if not term.isApp():
+            return False
+
+        return self.left.isEqual(term.getLeft()) \
+            and self.right.isEqual(term.getRight())
 
     def copy(self):
         left  = self.left.copy()
