@@ -17,6 +17,15 @@ class LambdaTerm:
     def getRedexPositions(self):
         return []
 
+    def substitute(self, term, i):
+        raise Exception("Not implemented")
+
+    def renumber(self, i, j):
+        raise Exception("Not implemented")
+
+    def reduce(self, position):
+        raise Exception("Invalid operation")
+
     def isEqual(self, term):
         return False
 
@@ -45,6 +54,21 @@ class LambdaAbs(LambdaTerm):
 
         positions = map(prepend_zero, self.subterm.getRedexPositions())
         return positions
+
+    def substitute(self, term, i):
+        subterm = self.subterm.substitute(term, i + 1)
+        return LambdaAbs(subterm)
+
+    def renumber(self, i, j):
+        subterm = self.subterm.renumber(i, j + 1)
+        return LambdaAbs(subterm)
+
+    def reduce(self, position):
+        if position == [] or position[0] != 0:
+            raise Exception("Invalid operation")
+        else:
+            subterm = self.subterm.reduce(position[1:])
+            return LambdaAbs(subterm)
 
     def isEqual(self, term):
         if not term.isAbs():
@@ -96,12 +120,40 @@ class LambdaApp(LambdaTerm):
         positions       = top_position + left_positions + right_positions
         return positions
 
+    def substitute(self, term, i):
+        left  = self.left.substitute(term, i)
+        right = self.right.substitute(term, i)
+        return LambdaApp(left, right)
+
+    def renumber(self, i, j):
+        left  = self.left.renumber(i, j)
+        right = self.right.renumber(i, j)
+        return LambdaApp(left, right)
+
     def isEqual(self, term):
         if not term.isApp():
             return False
 
         return self.left.isEqual(term.getLeft()) \
             and self.right.isEqual(term.getRight())
+
+    def reduce(self, position):
+        if position == []:
+            if not self.isRedex():
+                raise Exception("Invalid operation")
+            else:
+                subterm = self.left.getSubterm()
+                return subterm.substitute(self.right, 0)
+        elif position[0] == 1:
+            left  = self.left.reduce(position[1:])
+            right = self.right.copy()
+            return LambdaApp(left, right)
+        elif position[0] == 2:
+            left  = self.left.copy()
+            right = self.right.reduce(position[1:])
+            return LambdaApp(left, right)
+        else:
+            raise Exception("Invalid operation")
 
     def copy(self):
         left  = self.left.copy()
@@ -124,6 +176,20 @@ class LambdaVar(LambdaTerm):
 
     def isVar(self):
         return True
+
+    def substitute(self, term, i):
+        if self.value < i:
+            return LambdaVar(self.value)
+        elif self.value == i:
+            return term.renumber(i, 0)
+        else: # self.value > i
+            return LambdaVar(self.value - 1)
+
+    def renumber(self, i, j):
+        if self.value < j:
+            return LambdaVar(self.value)
+        else: # self.value >= j
+            return LambdaVar(self.value + i)
 
     def isEqual(self, term):
         if not term.isVar():
@@ -164,3 +230,25 @@ def test():
 
     print t4.toString()
     print t4.getRedexPositions()
+
+    t5 = t4.substitute(t1, 0)
+
+    print t5.toString()
+    print t5.getRedexPositions()
+
+    t6 = t5.reduce([1, 1, 2])
+
+    print t6.toString()
+
+    t7 = t6.reduce([1, 2])
+
+    print t7.toString()
+
+    t8 = t7.reduce([1, 2])
+
+    print t8.toString()
+
+    t9 = t8.reduce([1, 1])
+
+    print t9.toString()
+    print t9.getRedexPositions()
