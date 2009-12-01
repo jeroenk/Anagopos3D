@@ -35,6 +35,15 @@ class LambdaTerm:
     def toString(self):
         raise Exception("Not implemented")
 
+    def __eq__(self, other):
+        return self.isEqual(other)
+
+    def __hash__(self):
+        return self.toString().__hash__()
+
+    def __str__(self):
+        return self.toString()
+
 class LambdaAbs(LambdaTerm):
     def __init__(self, subterm):
         self.subterm = subterm
@@ -210,45 +219,45 @@ def test():
     ab = LambdaAbs(x)
     t1 = LambdaApp(ab, y)
 
-    print t1.toString()
+    print t1
 
     t2 = t1.copy()
 
     print t1.isRedex()
     print ab.isRedex()
 
-    print t1.isEqual(t2)
+    print t1 == t2
 
     t3 = LambdaApp(t1, t2)
 
-    print t3.toString()
+    print t3
 
     print t2.getRedexPositions()
     print t3.getRedexPositions()
 
     t4 = LambdaApp(t3, LambdaVar(1))
 
-    print t4.toString()
+    print t4
     print t4.getRedexPositions()
 
     t5 = t4.substitute(t1, 0)
 
-    print t5.toString()
+    print t5
     print t5.getRedexPositions()
 
     t6 = t5.reduce([1, 1, 2])
 
-    print t6.toString()
+    print t6
 
     t7 = t6.reduce([1, 2])
 
-    print t7.toString()
+    print t7
 
     t8 = t7.reduce([1, 2])
 
-    print t8.toString()
+    print t8
 
     t9 = t8.reduce([1, 1])
 
-    print t9.toString()
+    print t9
     print t9.getRedexPositions()
