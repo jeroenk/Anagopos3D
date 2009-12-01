@@ -21,10 +21,10 @@ class LambdaTerm:
         return False
 
     def copy(self):
-        return LambdaTerm()
+        raise Exception("Not implemented")
 
     def toString(self):
-        return "(null)"
+        raise Exception("Not implemented")
 
 class LambdaAbs(LambdaTerm):
     def __init__(self, subterm):
