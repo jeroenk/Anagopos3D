@@ -261,3 +261,16 @@ def test():
 
     print t9
     print t9.getRedexPositions()
+
+    print "Dictionary test:"
+
+    x = LambdaVar(0)
+    y = LambdaVar(0)
+    z = LambdaVar(1)
+
+    dictionary = {}
+
+    dictionary[x] = 1
+
+    print y in dictionary
+    print z in dictionary
