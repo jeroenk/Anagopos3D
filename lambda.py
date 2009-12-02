@@ -1,3 +1,6 @@
+import sys
+import lambda_parser
+
 from collections import deque
 from LambdaTermClass import LambdaAbs, LambdaApp, LambdaVar
 
@@ -38,5 +41,11 @@ def fixed_point_test():
 
     raise Exception("Should not be reachable!")
 
-omega_test()
-fixed_point_test()
+#omega_test()
+#fixed_point_test()
+
+print "Please input a lambda term: "
+line = sys.stdin.readline()
+term = lambda_parser.parse(line)
+iterate(term)
+print "Finished"
