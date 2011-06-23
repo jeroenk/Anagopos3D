@@ -91,7 +91,7 @@ class LambdaAbs(LambdaTerm):
         return term
 
     def toString(self):
-        return "\.(" + self.subterm.toString() + ")"
+        return "(\\" + self.subterm.toString() + ")"
 
 class LambdaApp(LambdaTerm):
     def __init__(self, left, right):
@@ -171,7 +171,7 @@ class LambdaApp(LambdaTerm):
         return term
 
     def toString(self):
-        return "(" + self.left.toString() + ")(" + self.right.toString() + ")"
+        return "(" + self.left.toString() + self.right.toString() + ")"
 
 class LambdaVar(LambdaTerm):
     def __init__(self, value):
