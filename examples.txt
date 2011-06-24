@@ -1,0 +1,31 @@
+Figure 1:
+
+((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))
+
+Also cool is:
+
+((\xy.yyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyxxy)(\x.x))
+
+Figure 2a:
+
+(\x.y)((\x.y)((\x.y)((\x.y)y)))
+
+Figure 2b:
+
+((\x.x)y)((\x.x)y)((\x.x)y)((\x.x)y)
+
+Figure 4:
+
+(\x.xx(xx))(\x.xxy)
+
+Figure 6:
+
+(\xy.x(\z.yzy)x)(\x.x)(\xy.x(\z.yzy)x)
+
+Figure 7a:
+
+((\x.x)y)((\x.xxx)\y.y)((\x.xx)\y.y)
+
+Figure 7b:
+
+((\xy.yyyyxxy)(\xy.yyyyxxy)(\x.x))(((\x.x)y)((\x.x)y))
