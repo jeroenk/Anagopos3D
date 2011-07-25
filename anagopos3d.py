@@ -47,17 +47,26 @@ class State:
         self.reset_terms()
 
     def set_vertex_style(self):
-        self.vertex = self.ubi.newVertexStyle(shape="sphere", color="#ff0000",
-                                                    size="1.0")
+        self.vertex = self.ubi.newVertexStyle(shape = "sphere",
+                                                  color = "#ff0000",
+                                                  size = "1.0")
+
+    def set_edge_style(self):
+        self.edge = self.ubi.newEdgeStyle(width = "2.0", color = "#ffffff")
+
     def reset_terms(self):
-        self.iterator = None
-        self.terms    = {}
-        self.count    = 0
-        self.reducts  = 0
-        self.change   = False
+        self.iterator     = None
+        self.terms        = {}
+        self.term_count   = 0
+        self.cur_term     = 0
+        self.reducts      = []
+        self.reduct_count = 0
+        self.cur_reduct   = 0
+        self.change       = False
 
         self.ubi.clear()
         self.set_vertex_style()
+        self.set_edge_style()
 
 class MainWindow(wx.Frame):
 
@@ -109,8 +118,8 @@ class MainWindow(wx.Frame):
         forward_button  = wx.Button(self, 0, "Forward", size = step_size)
         backward_button = wx.Button(self, 0, "Backward", size = step_size)
 
-        start_checkbox  = wx.CheckBox(self, -1, "Show start")
-        newest_checkbox = wx.CheckBox(self, -1, "Show newest")
+        self.start_checkbox = wx.CheckBox(self, -1, "Color initial term")
+        self.new_checkbox   = wx.CheckBox(self, -1, "Color latest term")
 
 
         # Spinners (for choosing step size)
@@ -133,7 +142,9 @@ class MainWindow(wx.Frame):
         draw_button.Bind(wx.EVT_BUTTON, self.ResetGraph)
         random_button.Bind(wx.EVT_BUTTON, self.Generate)
         forward_button.Bind(wx.EVT_BUTTON, self.Forward)
-        # XXX forward and backward binds
+        backward_button.Bind(wx.EVT_BUTTON, self.Backward)
+        self.start_checkbox.Bind(wx.EVT_CHECKBOX, self.StartCheck)
+        self.new_checkbox.Bind(wx.EVT_CHECKBOX, self.NewCheck)
 
         # Layout the control panel
         bts = wx.BoxSizer(wx.VERTICAL)
@@ -144,8 +155,8 @@ class MainWindow(wx.Frame):
         bts.Add(draw_button, 0, wx.ALIGN_CENTER | wx.LEFT | wx.BOTTOM, 3)
         bts.Add(forward_box, 0, wx.ALIGN_CENTER | wx.LEFT | wx.BOTTOM, 3)
         bts.Add(backward_box, 0, wx.ALIGN_CENTER | wx.LEFT | wx.BOTTOM, 3)
-        bts.Add(start_checkbox, 0, wx.ALIGN_LEFT | wx.LEFT, 10)
-        bts.Add(newest_checkbox, 0, wx.ALIGN_LEFT | wx.LEFT | wx.BOTTOM, 10)
+        bts.Add(self.start_checkbox, 0, wx.ALIGN_LEFT | wx.LEFT, 10)
+        bts.Add(self.new_checkbox, 0, wx.ALIGN_LEFT | wx.LEFT | wx.BOTTOM, 10)
 
         # Layout the whole window frame
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -249,6 +260,32 @@ class MainWindow(wx.Frame):
     def OnExit(self, event):
         self.Close(True)
 
+    def ColorInitial(self):
+        latest  = self.state.cur_term == 0 and self.new_checkbox.GetValue()
+        initial = self.start_checkbox.GetValue()
+
+        if initial and latest:
+            self.state.terms[0].set(color = "#00ffff")
+        elif initial:
+            self.state.terms[0].set(color = "#0000ff")
+        elif latest:
+            self.state.terms[0].set(color = "#00ff00")
+        else:
+            self.state.terms[0].set(color = "#ff0000")
+
+    def ColorLatest(self):
+        latest  = self.new_checkbox.GetValue()
+        initial = self.state.cur_term == 0 and self.start_checkbox.GetValue()
+
+        if initial and latest:
+            self.state.terms[self.state.cur_term].set(color = "#00ffff")
+        elif initial:
+            self.state.terms[self.state.cur_term].set(color = "#0000ff")
+        elif latest:
+            self.state.terms[self.state.cur_term].set(color = "#00ff00")
+        else:
+            self.state.terms[self.state.cur_term].set(color = "#ff0000")
+
     # XXX
     def ResetGraph(self, event):
         self.state.reset_terms()
@@ -268,67 +305,124 @@ class MainWindow(wx.Frame):
         (term, number, previous) = self.state.iterator.next()
         vertex = self.state.ubi.newVertex(style = self.state.vertex)
         self.state.terms[number] = vertex
-        self.state.count = 1
+        self.state.term_count = 1
+
+        self.ColorInitial()
 
         return
 
         # XXX change to white when we start typing
         self.term_input.SetBackgroundColour("#FFFFFF")
-        self.drawing.mgs = []
-        operations.assignvariables(self.drawing.term)
-        self.drawing.startnumber = 1
-        try:
-            def iterator():
-                Drawer = self.drawing.selected
-                for (i,g) in enumerate(operations.reductiongraphiter(self.drawing.term, self.drawing.startnum, self.drawing.endnum, self.rule_set)):
-                    yield g
-            self.drawing.iterator = iterator()
-        except KeyError:
-            pass
 
-        rg = self.drawing.iterator.next()
-        g = Drawer(rg)
-        self.drawing.reductiongraphlist = [rg]
-        self.drawing.graph = g
-        self.drawing.graphlist = [g]
-        self.drawing.graphnumber = 0
-        self.drawing.nomoregraphs = False
-        self.drawing.starttobig = False
+    def GetReduct(self):
+        cur_reduct = self.state.cur_reduct
 
-        self.drawing.graph.update_layout_animated(self.drawing.iter_animated)
+        if cur_reduct < self.state.reduct_count:
+            (number, previous, new, _) = self.state.reducts[cur_reduct]
+            new_reduct = False
+        else:
+            (_, number, previous) = self.state.iterator.next()
+            new_reduct = True
 
-        # self.drawing.Draw()
+            if number == self.state.term_count:
+                new = True
+                self.state.term_count += 1
+            else:
+                new = False
+
+            self.state.reduct_count += 1
+
+        self.state.cur_reduct += 1
+        return (new_reduct, number, previous, new)
 
     def Forward(self, event):
-        term_count = self.forward_spinner.GetValue()
+        reduct_count = self.forward_spinner.GetValue()
 
         if self.state.iterator == None or self.state.change:
             self.ResetGraph(None)
-            term_count -= 1
+            reduct_count -= 1
 
-            if self.state.iterator == None or term_count == 0:
+            if self.state.iterator == None or reduct_count == 0:
                 return
 
         try:
-            while term_count != 0:
-                (term, number, previous) = self.state.iterator.next()
-                self.state.reducts += 1
+            while reduct_count != 0:
+                (new_reduct, number, previous, new) = self.GetReduct()
 
-                if number == self.state.count:
+                if new:
                     vertex = self.state.ubi.newVertex(style = self.state.vertex)
                     self.state.terms[number] = vertex
-                    self.state.count += 1
+                    self.state.cur_term += 1
+
+                    if number - 1 == 0:
+                        self.ColorInitial()
+                    else:
+                        self.state.terms[number - 1].set(color = "#ff0000")
+
+                    self.ColorLatest()
 
                 if (number != previous):
                     s = self.state.terms[previous]
                     t = self.state.terms[number]
-                    self.state.ubi.newEdge(s, t, width = "2.0",
-                                               color = "#ffffff")
+                    edge = self.state.ubi.newEdge(s, t, style = self.state.edge)
+                else:
+                    edge = None
 
-                term_count -= 1
+                reduct = (number, previous, new, edge)
+                if new_reduct:
+                    self.state.reducts.append(reduct)
+                else:
+                    self.state.reducts[self.state.cur_reduct - 1] = reduct
+
+                reduct_count -= 1
         except StopIteration:
             self.SetStatusText("Reduction graph complete")
             return
+
+    def Backward(self, event):
+        if self.state.iterator == None or self.state.change:
+            self.ResetGraph(None)
+            return
+
+        reduct_count = self.backward_spinner.GetValue()
+        reduct_count = min(self.state.cur_reduct, reduct_count)
+
+        while reduct_count > 0:
+            self.state.cur_reduct -= 1
+            (number, previous, new, edge) \
+                = self.state.reducts[self.state.cur_reduct]
+
+            if edge != None:
+                edge.destroy()
+
+            reduct = (number, previous, new, None)
+            self.state.reducts[self.state.cur_reduct] = reduct
+
+            if self.state.reducts[self.state.cur_reduct][2]:
+                number = self.state.reducts[self.state.cur_reduct][0]
+                self.state.terms[number].destroy()
+                self.state.terms[number] = None
+                self.state.cur_term -= 1
+                self.ColorLatest()
+
+            reduct_count -= 1
+
+    def StartCheck(self, event):
+        if self.state.iterator == None or self.state.change:
+            self.ResetGraph(None)
+
+            if self.state.iterator == None:
+                return
+
+        self.ColorInitial()
+
+    def NewCheck(self, event):
+        if self.state.iterator == None or self.state.change:
+            self.StartCheck(None)
+            return
+
+        self.ColorLatest()
+
 
     def Generate(self, event):
         term_string = operation.random_term()
