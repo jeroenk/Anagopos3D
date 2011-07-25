@@ -286,7 +286,6 @@ class MainWindow(wx.Frame):
         else:
             self.state.terms[self.state.cur_term].set(color = "#ff0000")
 
-    # XXX
     def ResetGraph(self, event):
         self.state.reset_terms()
         term_string = self.term_input.GetValue()
@@ -299,16 +298,15 @@ class MainWindow(wx.Frame):
             self.SetStatusText(exception.__str__())
             return
 
-        self.SetStatusText("Term is valid")
-
         self.state.iterator = term.__iter__()
         (term, number, previous) = self.state.iterator.next()
         vertex = self.state.ubi.newVertex(style = self.state.vertex)
         self.state.terms[number] = vertex
         self.state.term_count = 1
-
         self.ColorInitial()
-
+        count = "(term=" + str(self.state.cur_term + 1) \
+                            + ",step=" + str(self.state.cur_reduct) + ")"
+        self.SetStatusText(count)
         return
 
         # XXX change to white when we start typing
@@ -375,9 +373,14 @@ class MainWindow(wx.Frame):
                     self.state.reducts[self.state.cur_reduct - 1] = reduct
 
                 reduct_count -= 1
+                text = ""
         except StopIteration:
-            self.SetStatusText("Reduction graph complete")
-            return
+            text = "Graph complete "
+
+        count = "(term=" + str(self.state.cur_term + 1) \
+                            + ",step=" + str(self.state.cur_reduct) + ")"
+        self.SetStatusText(text + count)
+
 
     def Backward(self, event):
         if self.state.iterator == None or self.state.change:
