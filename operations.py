@@ -27,8 +27,6 @@ a first-order term rewriting. The proxy functions here take care of selecting
 the correct reduction mechanisms and the correct parser.
 '''
 
-# XXX this should be changed to a proper object with some factory code
-
 from lambda_parser import parse as lambda_parser
 
 _mode = ""
@@ -68,17 +66,5 @@ def parse(term_string):
     '''
     return PARSER(term_string)
 
-def reductiongraphiter(root, start, end, ruleSet = None):
-    '''
-    Returns an iterator over the reduction graph, evovlving the graph in each
-    iteration step.
-    '''
-    if _mode == "lambda":
-        return OPS.reductiongraphiter(root, start, end)
-    elif _mode == "trs":
-        return OPS.reductiongraphiter(root, start, end, ruleSet)
-    else:
-        raise Exception("Unsupported mode: " + _mode)
-
 def random_term():
-    return OPS.random_term()
+    return RANDOM_TERM()
