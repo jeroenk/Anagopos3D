@@ -53,7 +53,7 @@ def set_mode(mode):
 
     _mode = mode
 
-def current_mode():
+def get_mode():
     return _mode
 
 def parse_rule_set(rule_string):

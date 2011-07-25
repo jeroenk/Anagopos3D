@@ -23,6 +23,7 @@ import wx
 from os import environ as osenviron
 
 from lambda_parser import LambdaParseException
+from ubigraph import Ubigraph
 
 import operations as operation
 
@@ -38,6 +39,25 @@ BETA_REDUCTION = "β-rule"
 class State:
     def __init__(self):
         self.rule_dir = osenviron["HOME"]
+
+        self.trs_contents    = ""
+        self.lambda_contents = ""
+
+        self.ubi = Ubigraph()
+        self.reset_terms()
+
+    def set_vertex_style(self):
+        self.vertex = self.ubi.newVertexStyle(shape="sphere", color="#ff0000",
+                                                    size="1.0")
+    def reset_terms(self):
+        self.iterator = None
+        self.terms    = {}
+        self.count    = 0
+        self.reducts  = 0
+        self.change   = False
+
+        self.ubi.clear()
+        self.set_vertex_style()
 
 class MainWindow(wx.Frame):
 
@@ -84,7 +104,7 @@ class MainWindow(wx.Frame):
                                           size = (width, 100))
 
         # Buttons
-        draw_button     = wx.Button(self, 0, "Draw Graph", size = button_size)
+        draw_button     = wx.Button(self, 0, "Reset Graph", size = button_size)
         random_button   = wx.Button(self, 0, "Random Term", size = button_size)
         forward_button  = wx.Button(self, 0, "Forward", size = step_size)
         backward_button = wx.Button(self, 0, "Backward", size = step_size)
@@ -94,14 +114,14 @@ class MainWindow(wx.Frame):
 
 
         # Spinners (for choosing step size)
-        self.forward_spinner = wx.SpinCtrl(self, -1, "1", min = 1, max = 100,
+        self.forward_spinner = wx.SpinCtrl(self, -1, "1", min = 1, max = 999,
                                                initial = 1, size = spinner_size)
         forward_box = wx.BoxSizer(wx.HORIZONTAL)
         forward_box.Add(forward_button, 0,
                             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 10)
         forward_box.Add(self.forward_spinner, 0,
                             wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
-        self.backward_spinner = wx.SpinCtrl(self, -1, "1", min = 1, max = 100,
+        self.backward_spinner = wx.SpinCtrl(self, -1, "1", min = 1, max = 999,
                                                initial = 1, size = spinner_size)
         backward_box = wx.BoxSizer(wx.HORIZONTAL)
         backward_box.Add(backward_button, 0,
@@ -110,8 +130,9 @@ class MainWindow(wx.Frame):
                             wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
 
         # Button/spinner actions
-        draw_button.Bind(wx.EVT_BUTTON, self.DrawGraph)
+        draw_button.Bind(wx.EVT_BUTTON, self.ResetGraph)
         random_button.Bind(wx.EVT_BUTTON, self.Generate)
+        forward_button.Bind(wx.EVT_BUTTON, self.Forward)
         # XXX forward and backward binds
 
         # Layout the control panel
@@ -136,9 +157,6 @@ class MainWindow(wx.Frame):
 
         self.CreateStatusBar()
 
-        # XXX fix status bar
-        # self.SetStatusText(s)
-
         # Menus
         filemenu = wx.Menu()
 
@@ -157,9 +175,6 @@ class MainWindow(wx.Frame):
         menubar = wx.MenuBar()
         menubar.Append(filemenu, "&File")
         self.SetMenuBar(menubar)
-
-        # XXX
-        # self.lambda_contents = self.trs_contents = ""
 
     def OnAbout(self,event):
         message = ANAGAPOS + " " + VERSION + "\n\n"
@@ -192,8 +207,7 @@ class MainWindow(wx.Frame):
 
             self.state.rule_dir = name[:name.index(rulename) - 1]
 
-            # XXX next line needs to be fixed
-            # operations.setmode('trs')
+            operation.set_mode("trs")
 
             with open(name, 'r') as f:
                 contents = f.read()
@@ -202,14 +216,20 @@ class MainWindow(wx.Frame):
             #self.rule_set = operations.parse_rule_set(suffix, contents)
             self.rule_name = rulename
 
-    # XXX
     def SetRadioVal(self, event):
+        self.state.change = True
+
+        if operation.get_mode() == "trs":
+            self.state.trs_contents = self.term_input.GetValue()
+        elif operation.get_mode() == "lambda":
+            self.state.lambda_contents = self.term_input.GetValue()
+
         if self.radio_lambda.GetValue():
             self.rule_set = None
             self.UpdateRuleInfo(BETA_REDUCTION)
+            print operatation.get_mode()
             operation.setmode("lambda")
-            # self.trs_contents = self.term_input.GetValue()
-            # self.term_input.SetValue(self.lambda_contents)
+            self.term_input.SetValue(self.state.lambda_contents)
         elif self.radio_trs.GetValue():
             self.loadRuleSet()
 
@@ -217,22 +237,21 @@ class MainWindow(wx.Frame):
                 self.radio_lambda.SetValue(True)
                 self.UpdateRuleInfo(BETA_REDUCTION)
                 operation.set_mode("lambda")
-                # self.trs_contents = self.term_input.GetValue()
-                # self.term_input.SetValue(self.lambda_contents)
+                self.term_input.SetValue(self.state.lambda_contents)
             else:
                 self.UpdateRuleInfo(self.rule_name)
-                operation.set_mode("trs")
-                # self.lambda_contents = self.term_input.GetValue()
-                # self.term_input.SetValue(self.trs_contents)
+                # mode already set by loadRuleSet
+                self.term_input.SetValue(self.state.trs_contents)
 
     def UpdateRuleInfo(self, text):
         self.active_rule_file_text.SetLabel(RULE_SET_TEXT + text)
 
-    def OnExit(self,event):
+    def OnExit(self, event):
         self.Close(True)
 
     # XXX
-    def DrawGraph(self, drawing):
+    def ResetGraph(self, event):
+        self.state.reset_terms()
         term_string = self.term_input.GetValue()
 
         try:
@@ -243,10 +262,17 @@ class MainWindow(wx.Frame):
             self.SetStatusText(exception.__str__())
             return
 
-        self.SetStatusText("Parsing complete")
+        self.SetStatusText("Term is valid")
+
+        self.state.iterator = term.__iter__()
+        (term, number, previous) = self.state.iterator.next()
+        vertex = self.state.ubi.newVertex(style = self.state.vertex)
+        self.state.terms[number] = vertex
+        self.state.count = 1
 
         return
 
+        # XXX change to white when we start typing
         self.term_input.SetBackgroundColour("#FFFFFF")
         self.drawing.mgs = []
         operations.assignvariables(self.drawing.term)
@@ -273,9 +299,40 @@ class MainWindow(wx.Frame):
 
         # self.drawing.Draw()
 
+    def Forward(self, event):
+        term_count = self.forward_spinner.GetValue()
+
+        if self.state.iterator == None or self.state.change:
+            self.ResetGraph(None)
+            term_count -= 1
+
+            if self.state.iterator == None or term_count == 0:
+                return
+
+        try:
+            while term_count != 0:
+                (term, number, previous) = self.state.iterator.next()
+                self.state.reducts += 1
+
+                if number == self.state.count:
+                    vertex = self.state.ubi.newVertex(style = self.state.vertex)
+                    self.state.terms[number] = vertex
+                    self.state.count += 1
+
+                if (number != previous):
+                    s = self.state.terms[previous]
+                    t = self.state.terms[number]
+                    self.state.ubi.newEdge(s, t, width = "2.0",
+                                               color = "#ffffff")
+
+                term_count -= 1
+        except StopIteration:
+            self.SetStatusText("Reduction graph complete")
+            return
+
     def Generate(self, event):
-        term = operation.random_term()
-        self.term_input.SetValue(term)
+        term_string = operation.random_term()
+        self.term_input.SetValue(term_string)
 
 app   = wx.PySimpleApp()
 frame = MainWindow()

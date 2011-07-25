@@ -68,8 +68,11 @@ def omega_test():
     delta = LambdaAbs(xx.copy())
     omega = LambdaApp(delta.copy(), delta.copy())
 
-    iterate(omega)
-    ubi_iterate(omega)
+    for t in omega:
+        print t
+
+    #iterate(omega)
+    #ubi_iterate(omega)
 
     print "Finished!"
 
@@ -81,16 +84,19 @@ def fixed_point_test():
     lfxx2 = LambdaApp(lfxx.copy(), lfxx.copy())
     Y     = LambdaAbs(lfxx2.copy())
 
-    ubi_iterate(Y)
+    for t in Y:
+        print t
+
+    #ubi_iterate(Y)
 
     raise Exception("Should not be reachable!")
 
 #omega_test()
-#fixed_point_test()
+fixed_point_test()
 
-print "Please input a lambda term: "
-line = sys.stdin.readline()
-term = lambda_parser.parse(line)
+#print "Please input a lambda term: "
+#line = sys.stdin.readline()
+#term = lambda_parser.parse(line)
 #iterate(term)
-ubi_iterate(term)
+#ubi_iterate(term)
 print "Finished"

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Anagopos 3D: A Reduction Graph Visualizer for Term Rewriting and λ-Calculus
+#
 # Copyright (C) 2011 Jeroen Ketema
 #
 # This program is free software: you can redistribute it and/or modify
@@ -12,6 +15,41 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from collections import deque
+
+class LambdaTermIterator:
+    def __init__(self, term):
+        self.term    = term
+        self.seen    = {term : 0}
+        self.todo    = deque([(term, 0)])
+        self.count   = 0
+        self.reducts = deque([(term, 0, -1)])
+
+    def __iter__(self):
+        return LambdaTermIterator(term)
+
+    def next(self):
+        if self.reducts != deque([]):
+            reduct = self.reducts.popleft()
+            return reduct
+
+        if self.todo == deque([]):
+            raise StopIteration
+
+        (term, number) = self.todo.popleft()
+
+        for position in term.getRedexPositions():
+            reduct = term.reduce(position)
+
+            if reduct not in self.seen:
+                self.count += 1
+                self.seen[reduct] = self.count
+                self.todo.append((reduct, self.count))
+
+            self.reducts.append((reduct, self.seen[reduct], number))
+
+        return self.next()
 
 class LambdaTerm:
     def __init__(self):
@@ -58,6 +96,9 @@ class LambdaTerm:
 
     def __str__(self):
         return self.toString()
+
+    def __iter__(self):
+        return LambdaTermIterator(self)
 
 class LambdaAbs(LambdaTerm):
     def __init__(self, subterm):
@@ -227,65 +268,3 @@ class LambdaVar(LambdaTerm):
 
     def toString(self):
         return str(self.value)
-
-def test():
-    x  = LambdaVar(0)
-    y  = LambdaVar(0)
-    ab = LambdaAbs(x)
-    t1 = LambdaApp(ab, y)
-
-    print t1
-
-    t2 = t1.copy()
-
-    print t1.isRedex()
-    print ab.isRedex()
-
-    print t1 == t2
-
-    t3 = LambdaApp(t1, t2)
-
-    print t3
-
-    print t2.getRedexPositions()
-    print t3.getRedexPositions()
-
-    t4 = LambdaApp(t3, LambdaVar(1))
-
-    print t4
-    print t4.getRedexPositions()
-
-    t5 = t4.substitute(t1, 0)
-
-    print t5
-    print t5.getRedexPositions()
-
-    t6 = t5.reduce([1, 1, 2])
-
-    print t6
-
-    t7 = t6.reduce([1, 2])
-
-    print t7
-
-    t8 = t7.reduce([1, 2])
-
-    print t8
-
-    t9 = t8.reduce([1, 1])
-
-    print t9
-    print t9.getRedexPositions()
-
-    print "Dictionary test:"
-
-    x = LambdaVar(0)
-    y = LambdaVar(0)
-    z = LambdaVar(1)
-
-    dictionary = {}
-
-    dictionary[x] = 1
-
-    print y in dictionary
-    print z in dictionary
