@@ -238,10 +238,12 @@ class VertexStyle:
 
 
 class EdgeStyle:
-  def __init__(self, U, parentStyle=None, id=None, arrow=None, color=None,
-             label=None, fontcolor=None, fontfamily=None, fontsize=None,
-             oriented=None, spline=None, showstrain=None, stroke=None,
-             strength=None, visible=None, width=None):
+  def __init__(self, U, parentStyle=None, id=None, arrow=None,
+             arrow_position=None, arrow_length=None, arrow_radius=None,
+             arrow_reverse=None, color=None, label=None, fontcolor=None,
+             fontfamily=None, fontsize=None, oriented=None, spline=None,
+             showstrain=None, stroke=None, strength=None, visible=None,
+             width=None):
     self.U = U
     parentStyle2 = parentStyle
     if parentStyle2 == None:
@@ -257,15 +259,18 @@ class EdgeStyle:
     else:
       U.server.ubigraph.new_edge_style_w_id(id, parentStyle2.id)
       self.id = id
-    self.set(arrow=arrow, color=color, label=label, fontcolor=fontcolor, 
-      fontfamily=fontfamily, fontsize=fontsize, oriented=oriented, 
-      spline=spline, showstrain=showstrain, stroke=stroke, strength=strength,
-      visible=visible, width=width)
+    self.set(arrow=arrow, arrow_position=arrow_position,
+      arrow_length=arrow_length, arrow_radius=arrow_radius,
+      arrow_reverse=arrow_reverse, color=color, label=label,
+      fontcolor=fontcolor, fontfamily=fontfamily, fontsize=fontsize,
+      oriented=oriented, spline=spline, showstrain=showstrain, stroke=stroke,
+      strength=strength, visible=visible, width=width)
 
-  def set(self, arrow=None, color=None,
-             label=None, fontcolor=None, fontfamily=None, fontsize=None,
-             oriented=None, spline=None, showstrain=None, stroke=None,
-             strength=None, visible=None, width=None):
+  def set(self, arrow=None, arrow_position=None, arrow_length=None,
+             arrow_radius=None, arrow_reverse=None, color=None, label=None,
+             fontcolor=None, fontfamily=None, fontsize=None, oriented=None,
+             spline=None, showstrain=None, stroke=None, strength=None,
+             visible=None, width=None):
     if arrow != None:
       self.U.server.ubigraph.set_edge_style_attribute(self.id, "arrow", str(arrow))
     if arrow_position != None:
