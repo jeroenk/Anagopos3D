@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Anagopos 3D: A Reduction Graph Visualizer for Term Rewriting and λ-Calculus
+#
 # Copyright (C) 2011 Jeroen Ketema
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,15 +22,18 @@ position  = None
 string_in = None
 symbol    = None
 
+class LambdaParseException(Exception):
+    pass
+
 class Term:
     def toString(self):
-        raise Exception("Not implemented")
+        raise LambdaParseException("Not implemented")
 
     def getFreeVars(self):
-        raise Exception("Not implemented")
+        raise LambdaParseException("Not implemented")
 
     def convert(self, free_vars):
-        raise Exception("Not implemented")
+        raise LambdaParseException("Not implemented")
 
     def __str__(self):
         return self.toString()
@@ -91,7 +97,7 @@ class Variable(Term):
         if self.string in free_vars:
             return LambdaVar(free_vars.index(self.string))
         else:
-            raise Exception("Non-convertible variable found")
+            raise LambdaParseException("Non-convertible variable found")
 
 def get_symbol():
     global position, symbol
@@ -112,7 +118,7 @@ def get_symbol():
 
 def variable():
     if not (symbol >= 'a' and symbol <= 'z'):
-        raise Exception("Invalid symbol on input: " + symbol)
+        raise LambdaParseException("Invalid symbol on input: " + symbol)
 
     string = symbol[:]
     get_symbol() # consumes letter
@@ -126,7 +132,7 @@ def variable():
 
 def abstraction():
     if symbol != '\\':
-        raise Exception("Invalid symbol on input: " + symbol)
+        raise LambdaParseException("Invalid symbol on input: " + symbol)
 
     get_symbol() # consumes abstraction symbol
     var = variable()
@@ -147,7 +153,7 @@ def term():
     if symbol != '(' \
             and not (symbol >= 'a' and symbol <= 'z') \
             and symbol != '\\':
-        raise Exception("Invalid symbol on input: " + symbol)
+        raise LambdaParseException("Invalid symbol on input: " + symbol)
 
     first = True
 
@@ -159,7 +165,7 @@ def term():
             subterm = term()
 
             if symbol != ')':
-                raise Exception("Invalid symbol on in: " + symbol)
+                raise LambdaParseException("Invalid symbol on input: " + symbol)
 
             get_symbol() # consumes closing parenthesis
         elif (symbol >= 'a' and symbol <= 'z'):
@@ -184,7 +190,8 @@ def parse(string):
     whole_term = term()
 
     if symbol != '\0':
-        raise Exception("Symbols left on input: " + string_in[position:])
+        raise LambdaParseException("Symbols left on input: " \
+                                       + string_in[position:])
 
     free_vars = []
 
@@ -192,8 +199,3 @@ def parse(string):
         free_vars.append(var)
 
     return whole_term.convert(free_vars)
-
-def test():
-    test_term = "  \\x.  xy23 z\\y d12.w d12"
-    t = parse(test_term)
-    print t
