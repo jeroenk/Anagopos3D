@@ -23,6 +23,7 @@ import wx
 from os import environ as osenviron
 
 from lambda_terms.lambda_parser import LambdaParseException
+from trs_terms.trs_parser import TRSParseException
 from ubigraph import Ubigraph
 
 import operations as operation
@@ -229,11 +230,13 @@ class MainWindow(wx.Frame):
 
             operation.set_mode("trs")
 
-            with open(name, 'r') as f:
-                contents = f.read()
+            try:
+                self.rule_set = operation.parse_rule_set(name)
+                self.SetStatusText("Rule set loaded")
+            except TRSParseException as exception:
+                self.SetStatusText(str(exception))
+                return
 
-            # XXX next line needs to be fixed
-            #self.rule_set = operations.parse_rule_set(suffix, contents)
             self.rule_name = rulename
 
     def SetRadioVal(self, event):
@@ -247,8 +250,7 @@ class MainWindow(wx.Frame):
         if self.radio_lambda.GetValue():
             self.rule_set = None
             self.UpdateRuleInfo(BETA_REDUCTION)
-            print operatation.get_mode()
-            operation.setmode("lambda")
+            operation.set_mode("lambda")
             self.term_input.SetValue(self.state.lambda_contents)
         elif self.radio_trs.GetValue():
             self.LoadRuleSet()
@@ -307,7 +309,7 @@ class MainWindow(wx.Frame):
         except (LambdaParseException) as exception:
             # The parser throws an exception when it fails.
             self.term_input.SetBackgroundColour(TERM_PARSE_ERROR_COLOUR)
-            self.SetStatusText(exception.__str__())
+            self.SetStatusText(str(exception))
             return
 
         self.SetStatusText("Parsing successful")

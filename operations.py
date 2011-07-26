@@ -28,6 +28,7 @@ the correct reduction mechanisms and the correct parser.
 '''
 
 from lambda_terms.lambda_parser import parse as lambda_parser
+from trs_terms.trs_parser import TRSParseRules
 
 _mode = ""
 
@@ -37,28 +38,29 @@ def set_mode(mode):
     "trs" or "lambda".
     '''
 
-    global OPS, PARSER, TPDBPARSER, _mode
+    global OPS, PARSER, RULE_PARSER, _mode
+
     if mode == "lambda":
         #OPS         = lambda_operations
         PARSER      = lambda_parser
-        #RULE_PARSER = None
-    #elif mode == "trs":
+        RULE_PARSER = None
+    elif mode == "trs":
         #OPS         = trs_operations
         #PARSER      = trs_parser
-        #RULE_PARSER = tpdb_parser
-    #else:
-    #    raise Exception("Unsupported mode: " + mode)
+        RULE_PARSER = TRSParseRules
+    else:
+        raise Exception("Unsupported mode: " + mode)
 
     _mode = mode
 
 def get_mode():
     return _mode
 
-def parse_rule_set(rule_string):
+def parse_rule_set(file_name):
     if RULE_PARSER == None:
         raise Exception("Rule set parsing not supported in " + _mode + " mode")
 
-    return RULE_PARSER.parse_rule_set(rule_string)
+    return RULE_PARSER(file_name)
 
 def parse(term_string):
     '''
