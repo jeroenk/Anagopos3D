@@ -454,7 +454,7 @@ class MainWindow(wx.Frame):
 
 
     def Generate(self, event):
-        term_string = operation.random_term()
+        term_string = operation.random_term(self.signature)
         self.term_input.SetValue(term_string)
 
 app   = wx.PySimpleApp()

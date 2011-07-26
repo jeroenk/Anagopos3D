@@ -44,7 +44,7 @@ class Application(Term):
         self.right = right
 
     def toString(self):
-        return "(" + self.left.toString() + ")(" + self.right.toString() + ")"
+        return "(" + self.left.toString() + " " + self.right.toString() + ")"
 
     def getFreeVars(self):
         left_free  = self.left.getFreeVars()
@@ -65,7 +65,7 @@ class Abstraction(Term):
         self.subterm = subterm
 
     def toString(self):
-        return "\\" + self.variable.toString() + ".(" \
+        return "(\\" + self.variable.toString() + "." \
             + self.subterm.toString() + ")"
 
     def getFreeVars(self):

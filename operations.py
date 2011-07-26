@@ -30,6 +30,7 @@ the correct reduction mechanisms and the correct parser.
 from trs_terms.trs_parser import TRSParseRules as trs_parser
 from lambda_terms.lambda_term_parser import parse as lambda_term_parser
 from trs_terms.trs_term_parser import parse as trs_term_parser
+from lambda_terms.lambda_random_term import random_term as lambda_random_term
 
 _mode = ""
 
@@ -39,12 +40,12 @@ def set_mode(mode):
     "trs" or "lambda".
     '''
 
-    global OPS, PARSER, RULE_PARSER, _mode
+    global RANDOM_TERM, PARSER, RULE_PARSER, _mode
 
     if mode == "lambda":
-        #OPS         = lambda_operations
         PARSER      = lambda_term_parser
         RULE_PARSER = None
+        RANDOM_TERM = lambda_random_term
     elif mode == "trs":
         #OPS         = trs_operations
         PARSER      = trs_term_parser
@@ -69,5 +70,5 @@ def parse(term_string, signature):
     '''
     return PARSER(term_string, signature)
 
-def random_term():
-    return RANDOM_TERM()
+def random_term(signature):
+    return RANDOM_TERM(signature)
