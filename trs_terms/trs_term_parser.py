@@ -112,20 +112,6 @@ def get_identifier():
     get_symbol()
     return identifier
 
-def variable():
-    if not (symbol >= 'a' and symbol <= 'z'):
-        raise LambdaParseException("Invalid symbol on input: " + symbol)
-
-    string = symbol[:]
-    get_symbol() # consumes letter
-
-    while (symbol >= '0' and symbol <= '9'):
-        string += symbol
-        get_symbol() # consumes number
-
-    var = Variable(string)
-    return var
-
 def term():
     if not (symbol >= 'a' and symbol <= 'z') \
             and not (symbol >= 'A' and symbol <= 'Z') \
