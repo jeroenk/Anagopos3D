@@ -27,7 +27,7 @@ a first-order term rewriting. The proxy functions here take care of selecting
 the correct reduction mechanisms and the correct parser.
 '''
 
-from lambda_parser import parse as lambda_parser
+from lambda_terms.lambda_parser import parse as lambda_parser
 
 _mode = ""
 

@@ -22,7 +22,7 @@ import wx
 
 from os import environ as osenviron
 
-from lambda_parser import LambdaParseException
+from lambda_terms.lambda_parser import LambdaParseException
 from ubigraph import Ubigraph
 
 import operations as operation
