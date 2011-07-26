@@ -22,8 +22,9 @@ import wx
 
 from os import environ as osenviron
 
-from lambda_terms.lambda_parser import LambdaParseException
 from trs_terms.trs_parser import TRSParseException
+from lambda_terms.lambda_term_parser import LambdaTermParseException
+from trs_terms.trs_term_parser import TRSTermParseException
 from ubigraph import Ubigraph
 
 import operations as operation
@@ -43,9 +44,6 @@ DISP_STEPS_TEXT = "Displayed steps: "
 class State:
     def __init__(self):
         self.rule_dir = osenviron["HOME"]
-
-        self.trs_contents    = ""
-        self.lambda_contents = ""
 
         self.ubi = Ubigraph()
         self.reset_terms()
@@ -80,6 +78,10 @@ class MainWindow(wx.Frame):
                               style = style)
 
         self.state = State()
+
+        self.rule_set  = None
+        self.rule_name = None
+        self.signature = None
 
         # Create the radio buttons to select between lambda calculus and TRS.
         self.radio_lambda = wx.RadioButton(self, -1, 'λ-calculus',
@@ -217,6 +219,7 @@ class MainWindow(wx.Frame):
 
         self.rule_set  = None
         self.rule_name = None
+        self.signature = None
 
         if dlg.ShowModal() == wx.ID_OK:
             name     = dlg.GetPath()
@@ -231,7 +234,7 @@ class MainWindow(wx.Frame):
             operation.set_mode("trs")
 
             try:
-                self.rule_set = operation.parse_rule_set(name)
+                (self.rule_set, self.signature) = operation.parse_rule_set(name)
                 self.SetStatusText("Rule set loaded")
             except TRSParseException as exception:
                 self.SetStatusText(str(exception))
@@ -242,16 +245,12 @@ class MainWindow(wx.Frame):
     def SetRadioVal(self, event):
         self.state.reset_terms()
 
-        if operation.get_mode() == "trs":
-            self.state.trs_contents = self.term_input.GetValue()
-        elif operation.get_mode() == "lambda":
-            self.state.lambda_contents = self.term_input.GetValue()
-
         if self.radio_lambda.GetValue():
-            self.rule_set = None
+            self.rule_set  = None
+            self.rule_name = None
+            self.signature = None
             self.UpdateRuleInfo(BETA_REDUCTION)
             operation.set_mode("lambda")
-            self.term_input.SetValue(self.state.lambda_contents)
         elif self.radio_trs.GetValue():
             self.LoadRuleSet()
 
@@ -259,11 +258,9 @@ class MainWindow(wx.Frame):
                 self.radio_lambda.SetValue(True)
                 self.UpdateRuleInfo(BETA_REDUCTION)
                 operation.set_mode("lambda")
-                self.term_input.SetValue(self.state.lambda_contents)
             else:
                 self.UpdateRuleInfo(self.rule_name)
                 # mode already set by LoadRuleSet
-                self.term_input.SetValue(self.state.trs_contents)
 
     def UpdateRuleInfo(self, text):
         self.active_rule_file_text.SetLabel(RULE_SET_TEXT + text)
@@ -305,8 +302,8 @@ class MainWindow(wx.Frame):
         term_string = self.term_input.GetValue()
 
         try:
-            term = operation.parse(term_string)
-        except (LambdaParseException) as exception:
+            term = operation.parse(term_string, self.signature)
+        except (LambdaTermParseException, TRSTermParseException) as exception:
             # The parser throws an exception when it fails.
             self.term_input.SetBackgroundColour(TERM_PARSE_ERROR_COLOUR)
             self.SetStatusText(str(exception))
@@ -314,8 +311,9 @@ class MainWindow(wx.Frame):
 
         self.SetStatusText("Parsing successful")
 
-        self.state.iterator = term.__iter__()
-        (term, number, previous) = self.state.iterator.next()
+        term.addRuleSetForIter(self.rule_set)
+        self.state.iterator = iter(term)
+        (term, number, previous, _) = self.state.iterator.next()
         vertex = self.state.ubi.newVertex(style = self.state.vertex)
         self.state.terms[number] = vertex
         self.state.term_count = 1

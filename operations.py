@@ -27,8 +27,9 @@ a first-order term rewriting. The proxy functions here take care of selecting
 the correct reduction mechanisms and the correct parser.
 '''
 
-from lambda_terms.lambda_term_parser import parse as lambda_term_parser
 from trs_terms.trs_parser import TRSParseRules as trs_parser
+from lambda_terms.lambda_term_parser import parse as lambda_term_parser
+from trs_terms.trs_term_parser import parse as trs_term_parser
 
 _mode = ""
 
@@ -46,7 +47,7 @@ def set_mode(mode):
         RULE_PARSER = None
     elif mode == "trs":
         #OPS         = trs_operations
-        #PARSER      = trs_parser
+        PARSER      = trs_term_parser
         RULE_PARSER = trs_parser
     else:
         raise Exception("Unsupported mode: " + mode)
@@ -62,11 +63,11 @@ def parse_rule_set(file_name):
 
     return RULE_PARSER(file_name)
 
-def parse(term_string):
+def parse(term_string, signature):
     '''
     Parse a term.
     '''
-    return PARSER(term_string)
+    return PARSER(term_string, signature)
 
 def random_term():
     return RANDOM_TERM()

@@ -59,13 +59,25 @@ class LambdaTerm:
         raise LambdaException("Not implemented")
 
     def __eq__(self, other):
+        if not isinstance(other, LambdaTerm):
+            return False
+
         return self.isEqual(other)
+
+    def __ne__(self, other):
+        if not isinstance(other, LambdaTerm):
+            return True
+
+        return not self.isEqual(other)
 
     def __hash__(self):
         return self.toString().__hash__()
 
     def __str__(self):
         return self.toString()
+
+    def addRuleSetForIter(self, _):
+        return
 
     def __iter__(self):
         return LambdaTermIterator(self)
@@ -217,10 +229,10 @@ class LambdaTermIterator:
         self.seen    = {term : 0}
         self.todo    = deque([(term, 0)])
         self.count   = 0
-        self.reducts = deque([(term, 0, -1)])
+        self.reducts = deque([(term, 0, -1, True)])
 
     def __iter__(self):
-        return LambdaTermIterator(term)
+        return LambdaTermIterator(self.term)
 
     def next(self):
         if self.reducts != deque([]):

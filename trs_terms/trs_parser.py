@@ -88,7 +88,7 @@ def reset_global():
 
     termlevel = []
 
-    signature = {}
+    signature   = {}
     func_symbol = None
     arity       = None
 
@@ -447,4 +447,4 @@ def TRSParseRules(file_name):
 
         rule_set.append(TRSRule(lhs, rhs))
 
-    return rule_set
+    return (rule_set, signature)

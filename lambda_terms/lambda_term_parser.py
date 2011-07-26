@@ -18,22 +18,22 @@
 
 from LambdaTermClass import LambdaAbs, LambdaApp, LambdaVar
 
-position  = None
-string_in = None
-symbol    = None
+position = None
+string   = None
+symbol   = None
 
-class LambdaParseException(Exception):
+class LambdaTermParseException(Exception):
     pass
 
 class Term:
     def toString(self):
-        raise LambdaParseException("Not implemented")
+        raise LambdaTermParseException("Not implemented")
 
     def getFreeVars(self):
-        raise LambdaParseException("Not implemented")
+        raise LambdaTermParseException("Not implemented")
 
     def convert(self, free_vars):
-        raise LambdaParseException("Not implemented")
+        raise LambdaTermParseException("Not implemented")
 
     def __str__(self):
         return self.toString()
@@ -97,28 +97,28 @@ class Variable(Term):
         if self.string in free_vars:
             return LambdaVar(free_vars.index(self.string))
         else:
-            raise LambdaParseException("Non-convertible variable found")
+            raise LambdaTermParseException("Non-convertible variable found")
 
 def get_symbol():
     global position, symbol
 
-    while position != len(string_in) \
-            and (string_in[position] == ' ' \
-                     or string_in[position] == '\t' \
-                     or string_in[position] == '\n' \
-                     or string_in[position] == '\r'):
+    while position != len(string) \
+            and (string[position] == ' ' \
+                     or string[position] == '\t' \
+                     or string[position] == '\n' \
+                     or string[position] == '\r'):
         position += 1
 
-    if position == len(string_in):
+    if position == len(string):
        symbol = '\0'
        return
 
-    symbol = string_in[position]
+    symbol = string[position]
     position += 1
 
 def variable():
     if not (symbol >= 'a' and symbol <= 'z'):
-        raise LambdaParseException("Invalid symbol on input: " + symbol)
+        raise LambdaTermParseException("Invalid symbol on input: " + symbol)
 
     string = symbol[:]
     get_symbol() # consumes letter
@@ -132,7 +132,7 @@ def variable():
 
 def abstraction():
     if symbol != '\\':
-        raise LambdaParseException("Invalid symbol on input: " + symbol)
+        raise LambdaTermParseException("Invalid symbol on input: " + symbol)
 
     get_symbol() # consumes abstraction symbol
     var = variable()
@@ -153,7 +153,7 @@ def term():
     if symbol != '(' \
             and not (symbol >= 'a' and symbol <= 'z') \
             and symbol != '\\':
-        raise LambdaParseException("Invalid symbol on input: " + symbol)
+        raise LambdaTermParseException("Invalid symbol on input: " + symbol)
 
     first = True
 
@@ -165,7 +165,8 @@ def term():
             subterm = term()
 
             if symbol != ')':
-                raise LambdaParseException("Invalid symbol on input: " + symbol)
+                raise LambdaTermParseException("Invalid symbol on input: " \
+                                                   + symbol)
 
             get_symbol() # consumes closing parenthesis
         elif (symbol >= 'a' and symbol <= 'z'):
@@ -181,17 +182,17 @@ def term():
 
     return top
 
-def parse(string):
-    global string_in, position
+def parse(string_in, _):
+    global string, position
 
-    string_in = string
+    string = string_in
     position = 0
     get_symbol()
     whole_term = term()
 
     if symbol != '\0':
-        raise LambdaParseException("Symbols left on input: " \
-                                       + string_in[position:])
+        raise LambdaTermParseException("Symbols left on input: " \
+                                           + string[position:])
 
     free_vars = []
 

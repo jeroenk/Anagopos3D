@@ -36,7 +36,16 @@ class TRSFunctionSymbol:
         return self.symbol == symbol.symbol and self.arity == symbol.arity
 
     def __eq__(self, other):
+        if not isinstance(other, TRSFunctionSymbol):
+            return False
+
         return self.isEqual(other)
+
+    def __ne__(self, other):
+        if not isinstance(other, TRSFunctionSymbol):
+            return True
+
+        return not self.isEqual(other)
 
     def __hash__(self):
         return self.symbol.__hash__()
@@ -57,7 +66,7 @@ class TRSTerm:
     def match(self, term):
         raise TRSException("Not implemented")
 
-    def getRedexes(self, rule_set):
+    def getRedexPositions(self, rule_set):
         return []
 
     def substitute(self, substitution):
@@ -76,7 +85,16 @@ class TRSTerm:
         raise Exception("Not implemented")
 
     def __eq__(self, other):
+        if not isinstance(other, TRSTerm):
+            return False
+
         return self.isEqual(other)
+
+    def __ne__(self, other):
+        if not isinstance(other, TRSTerm):
+            return True
+
+        return not self.isEqual(other)
 
     def __hash__(self):
         return self.toString().__hash__()
@@ -84,8 +102,11 @@ class TRSTerm:
     def __str__(self):
         return self.toString()
 
+    def addRuleSetForIter(self, rule_set):
+        self.rule_set = rule_set
+
     def __iter__(self):
-        return TRSTermIterator(self)
+        return TRSTermIterator(self, self.rule_set)
 
 class TRSFun(TRSTerm):
     def __init__(self, symbol, subterms):
@@ -108,13 +129,13 @@ class TRSFun(TRSTerm):
         substitution = {}
 
         for i in range(self.symbol.getArity()):
-            subterm_substitution = match(self.subterms[i], term.subterms[i])
+            subterm_substitution = self.subterms[i].match(term.subterms[i])
 
             if subterm_substitution == None:
                 return None
 
             for variable in subterm_substitution:
-                if variable not in substitition:
+                if variable not in substitution:
                     substitution[variable] = subterm_substitution[variable]
                 elif subterm_substitution[variable] != substition[variable]:
                     return None
@@ -125,7 +146,7 @@ class TRSFun(TRSTerm):
         redexes = []
 
         for rule in rule_set:
-            substitution = self.match(rule.getLeft())
+            substitution = rule.getLeft().match(self)
 
             if substitution != None:
                 redex = ([], rule)
@@ -150,7 +171,7 @@ class TRSFun(TRSTerm):
 
     def reduce(self, position, rule):
         if position == []:
-            substitution = match(self, rule.getLeft())
+            substitution = rule.getLeft().match(self)
 
             if substitution == None:
                 raise TRSException("Invalid operation")
@@ -160,7 +181,7 @@ class TRSFun(TRSTerm):
             arity = self.symbol.getArity()
 
             if position[0] >= arity:
-                raise TRSException("Invalif operation")
+                raise TRSException("Invalid operation")
 
             subterms = []
 
@@ -227,7 +248,7 @@ class TRSVar(TRSTerm):
         if self.variable in substitution:
             return substitution[self.variable].copy()
         else:
-            return TermVar(self.variable)
+            return TRSVar(self.variable)
 
     def isEqual(self, term):
         if not term.isVar():
@@ -236,7 +257,7 @@ class TRSVar(TRSTerm):
         return self.variable == term.variable
 
     def copy(self):
-        return LambdaVar(self.variable)
+        return TRSVar(self.variable)
 
     def toString(self):
         return self.variable
@@ -256,15 +277,16 @@ class TRSRule:
         return str(self.left) + " -> " + str(self.right)
 
 class TRSTermIterator:
-    def __init__(self, term):
-        self.term    = term
-        self.seen    = {term : 0}
-        self.todo    = deque([(term, 0)])
-        self.count   = 0
-        self.reducts = deque([(term, 0, -1)])
+    def __init__(self, term, rule_set):
+        self.term     = term
+        self.seen     = {term : 0}
+        self.todo     = deque([(term, 0)])
+        self.count    = 0
+        self.reducts  = deque([(term, 0, -1, True)])
+        self.rule_set = rule_set
 
     def __iter__(self):
-        return LambdaTermIterator(term)
+        return TRSTermIterator(self.term, self.rule_set)
 
     def next(self):
         if self.reducts != deque([]):
@@ -276,7 +298,7 @@ class TRSTermIterator:
 
         (term, number) = self.todo.popleft()
 
-        for (position, rule) in term.getRedexPositions():
+        for (position, rule) in term.getRedexPositions(self.rule_set):
             reduct = term.reduce(position, rule)
             new = False
 
