@@ -36,6 +36,9 @@ URL      = "https://github.com/jeroenk/lambda"
 RULE_SET_TEXT  = "Rule set: "
 BETA_REDUCTION = "β-rule"
 
+DISP_TERMS_TEXT = "Displayed terms: "
+DISP_STEPS_TEXT = "Displayed steps: "
+
 class State:
     def __init__(self):
         self.rule_dir = osenviron["HOME"]
@@ -62,7 +65,6 @@ class State:
         self.reducts      = []
         self.reduct_count = 0
         self.cur_reduct   = 0
-        self.change       = False
 
         self.ubi.clear()
         self.set_vertex_style()
@@ -73,7 +75,7 @@ class MainWindow(wx.Frame):
     def __init__(self, parent = None, id = -1, title = ANAGAPOS):
         style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX
 
-        wx.Frame.__init__(self, parent, id, title, size = (220, 370),
+        wx.Frame.__init__(self, parent, id, title, size = (220, 420),
                               style = style)
 
         self.state = State()
@@ -146,6 +148,11 @@ class MainWindow(wx.Frame):
         self.start_checkbox.Bind(wx.EVT_CHECKBOX, self.StartCheck)
         self.new_checkbox.Bind(wx.EVT_CHECKBOX, self.NewCheck)
 
+        # Status information
+        self.disp_terms = wx.StaticText(self, -1, DISP_TERMS_TEXT + "-")
+        self.disp_steps = wx.StaticText(self, -1, DISP_STEPS_TEXT + "-")
+
+
         # Layout the control panel
         bts = wx.BoxSizer(wx.VERTICAL)
         bts.Add(radio_box, 0, wx.ALIGN_LEFT | wx.ALL, 10)
@@ -157,6 +164,8 @@ class MainWindow(wx.Frame):
         bts.Add(backward_box, 0, wx.ALIGN_CENTER | wx.LEFT | wx.BOTTOM, 3)
         bts.Add(self.start_checkbox, 0, wx.ALIGN_LEFT | wx.LEFT, 10)
         bts.Add(self.new_checkbox, 0, wx.ALIGN_LEFT | wx.LEFT | wx.BOTTOM, 10)
+        bts.Add(self.disp_terms, 0, wx.ALIGN_LEFT | wx.LEFT | wx.BOTTOM, 10)
+        bts.Add(self.disp_steps, 0, wx.ALIGN_LEFT | wx.LEFT | wx.BOTTOM, 10)
 
         # Layout the whole window frame
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -201,7 +210,7 @@ class MainWindow(wx.Frame):
         self.radio_trs.SetValue(True)
         self.SetRadioVal(event)
 
-    def loadRuleSet(self):
+    def LoadRuleSet(self):
         dlg = wx.FileDialog(self, "Open rule set", self.state.rule_dir, "",
                                 "TRS files (*.xml)|*.xml", wx.OPEN)
 
@@ -213,7 +222,7 @@ class MainWindow(wx.Frame):
             rulename = dlg.GetFilename()[:-4]
             suffix   = name[-3:]
             if suffix != 'xml':
-                print "Unrecognized file format: " + name
+                self.SetStatusText("Unrecognized file format: " + suffix)
                 return
 
             self.state.rule_dir = name[:name.index(rulename) - 1]
@@ -228,7 +237,7 @@ class MainWindow(wx.Frame):
             self.rule_name = rulename
 
     def SetRadioVal(self, event):
-        self.state.change = True
+        self.state.reset_terms()
 
         if operation.get_mode() == "trs":
             self.state.trs_contents = self.term_input.GetValue()
@@ -242,7 +251,7 @@ class MainWindow(wx.Frame):
             operation.setmode("lambda")
             self.term_input.SetValue(self.state.lambda_contents)
         elif self.radio_trs.GetValue():
-            self.loadRuleSet()
+            self.LoadRuleSet()
 
             if self.rule_set == None:
                 self.radio_lambda.SetValue(True)
@@ -251,7 +260,7 @@ class MainWindow(wx.Frame):
                 self.term_input.SetValue(self.state.lambda_contents)
             else:
                 self.UpdateRuleInfo(self.rule_name)
-                # mode already set by loadRuleSet
+                # mode already set by LoadRuleSet
                 self.term_input.SetValue(self.state.trs_contents)
 
     def UpdateRuleInfo(self, text):
@@ -298,15 +307,16 @@ class MainWindow(wx.Frame):
             self.SetStatusText(exception.__str__())
             return
 
+        self.SetStatusText("Parsing successful")
+
         self.state.iterator = term.__iter__()
         (term, number, previous) = self.state.iterator.next()
         vertex = self.state.ubi.newVertex(style = self.state.vertex)
         self.state.terms[number] = vertex
         self.state.term_count = 1
         self.ColorInitial()
-        count = "(term=" + str(self.state.cur_term + 1) \
-                            + ",step=" + str(self.state.cur_reduct) + ")"
-        self.SetStatusText(count)
+        self.disp_terms.SetLabel(DISP_TERMS_TEXT + str(self.state.cur_term + 1))
+        self.disp_steps.SetLabel(DISP_STEPS_TEXT + str(self.state.cur_reduct))
         return
 
         # XXX change to white when we start typing
@@ -316,27 +326,31 @@ class MainWindow(wx.Frame):
         cur_reduct = self.state.cur_reduct
 
         if cur_reduct < self.state.reduct_count:
-            (number, previous, new, _) = self.state.reducts[cur_reduct]
+            (number, previous, new_dst, _) = self.state.reducts[cur_reduct]
             new_reduct = False
         else:
-            (_, number, previous) = self.state.iterator.next()
+            (_, number, previous, new_dst) = self.state.iterator.next()
             new_reduct = True
 
-            if number == self.state.term_count:
-                new = True
+            if new_dst:
                 self.state.term_count += 1
-            else:
-                new = False
 
             self.state.reduct_count += 1
 
+        if new_dst:
+            vertex = self.state.ubi.newVertex(style = self.state.vertex)
+            self.state.terms[number] = vertex
+            self.state.cur_term += 1
+
         self.state.cur_reduct += 1
-        return (new_reduct, number, previous, new)
+        return (new_reduct, number, previous, new_dst)
 
     def Forward(self, event):
+        self.SetStatusText("")
         reduct_count = self.forward_spinner.GetValue()
+        count = reduct_count
 
-        if self.state.iterator == None or self.state.change:
+        if self.state.iterator == None:
             self.ResetGraph(None)
             reduct_count -= 1
 
@@ -345,13 +359,9 @@ class MainWindow(wx.Frame):
 
         try:
             while reduct_count != 0:
-                (new_reduct, number, previous, new) = self.GetReduct()
+                (new_reduct, number, previous, new_dst) = self.GetReduct()
 
-                if new:
-                    vertex = self.state.ubi.newVertex(style = self.state.vertex)
-                    self.state.terms[number] = vertex
-                    self.state.cur_term += 1
-
+                if new_dst:
                     if number - 1 == 0:
                         self.ColorInitial()
                     else:
@@ -366,29 +376,34 @@ class MainWindow(wx.Frame):
                 else:
                     edge = None
 
-                reduct = (number, previous, new, edge)
+                reduct = (number, previous, new_dst, edge)
                 if new_reduct:
                     self.state.reducts.append(reduct)
                 else:
                     self.state.reducts[self.state.cur_reduct - 1] = reduct
 
                 reduct_count -= 1
-                text = ""
+                self.disp_terms.SetLabel(DISP_TERMS_TEXT \
+                                             + str(self.state.cur_term + 1))
+                self.disp_steps.SetLabel(DISP_STEPS_TEXT \
+                                             + str(self.state.cur_reduct))
+
+            if count == 1:
+                self.SetStatusText("Added 1 step")
+            else:
+                self.SetStatusText("Added " + str(count) + " steps")
         except StopIteration:
-            text = "Graph complete "
-
-        count = "(term=" + str(self.state.cur_term + 1) \
-                            + ",step=" + str(self.state.cur_reduct) + ")"
-        self.SetStatusText(text + count)
-
+            self.SetStatusText("Graph complete")
 
     def Backward(self, event):
-        if self.state.iterator == None or self.state.change:
+        self.SetStatusText("")
+        if self.state.iterator == None:
             self.ResetGraph(None)
             return
 
         reduct_count = self.backward_spinner.GetValue()
         reduct_count = min(self.state.cur_reduct, reduct_count)
+        count = reduct_count
 
         while reduct_count > 0:
             self.state.cur_reduct -= 1
@@ -409,9 +424,20 @@ class MainWindow(wx.Frame):
                 self.ColorLatest()
 
             reduct_count -= 1
+            self.disp_terms.SetLabel(DISP_TERMS_TEXT \
+                                         + str(self.state.cur_term + 1))
+            self.disp_steps.SetLabel(DISP_STEPS_TEXT \
+                                         + str(self.state.cur_reduct))
+
+
+        if count == 1:
+            self.SetStatusText("Removed 1 step")
+        else:
+            self.SetStatusText("Removed " + str(count) + " steps")
+
 
     def StartCheck(self, event):
-        if self.state.iterator == None or self.state.change:
+        if self.state.iterator == None:
             self.ResetGraph(None)
 
             if self.state.iterator == None:
@@ -420,7 +446,7 @@ class MainWindow(wx.Frame):
         self.ColorInitial()
 
     def NewCheck(self, event):
-        if self.state.iterator == None or self.state.change:
+        if self.state.iterator == None:
             self.StartCheck(None)
             return
 

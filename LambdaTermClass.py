@@ -41,13 +41,15 @@ class LambdaTermIterator:
 
         for position in term.getRedexPositions():
             reduct = term.reduce(position)
+            new = False
 
             if reduct not in self.seen:
                 self.count += 1
                 self.seen[reduct] = self.count
                 self.todo.append((reduct, self.count))
+                new = True
 
-            self.reducts.append((reduct, self.seen[reduct], number))
+            self.reducts.append((reduct, self.seen[reduct], number, new))
 
         return self.next()
 
