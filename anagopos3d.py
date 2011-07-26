@@ -113,6 +113,7 @@ class MainWindow(wx.Frame):
         # Term text field
         self.term_input = wx.TextCtrl(self, 0, style = wx.TE_MULTILINE,
                                           size = (width, 100))
+        self.term_input.Bind(wx.EVT_TEXT, self.ResetTextColor)
 
         # Buttons
         draw_button     = wx.Button(self, 0, "Reset Graph", size = button_size)
@@ -151,7 +152,6 @@ class MainWindow(wx.Frame):
         # Status information
         self.disp_terms = wx.StaticText(self, -1, DISP_TERMS_TEXT + "-")
         self.disp_steps = wx.StaticText(self, -1, DISP_STEPS_TEXT + "-")
-
 
         # Layout the control panel
         bts = wx.BoxSizer(wx.VERTICAL)
@@ -269,6 +269,9 @@ class MainWindow(wx.Frame):
     def OnExit(self, event):
         self.Close(True)
 
+    def ResetTextColor(self, event):
+        self.term_input.SetBackgroundColour("#FFFFFF")
+
     def ColorInitial(self):
         latest  = self.state.cur_term == 0 and self.new_checkbox.GetValue()
         initial = self.start_checkbox.GetValue()
@@ -318,9 +321,6 @@ class MainWindow(wx.Frame):
         self.disp_terms.SetLabel(DISP_TERMS_TEXT + str(self.state.cur_term + 1))
         self.disp_steps.SetLabel(DISP_STEPS_TEXT + str(self.state.cur_reduct))
         return
-
-        # XXX change to white when we start typing
-        self.term_input.SetBackgroundColour("#FFFFFF")
 
     def GetReduct(self):
         cur_reduct = self.state.cur_reduct
