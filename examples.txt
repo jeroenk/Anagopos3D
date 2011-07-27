@@ -1,31 +1,36 @@
-Figure 1:
 
-((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))
+This file provides the example lambda terms from:
 
-Also cool is:
+    N.B.B. Grathwohl, J. Ketema, J.D. Pallesen, and J.G. Simonsen. Anagopos:
+    A Reduction Graph Visualizer for Term Rewriting and Lambda Calculus.
+    Proceedings of the 22nd International Conference on Rewriting Techniques
+    and Applications (RTA 2011), volume 10 of LIPIcs, pages 61-70.
 
-((\xy.yyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyxxy)(\x.x))
+* Figure 1:
 
-Figure 2a:
+  ((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))
+      ((\xy.yyyyyyyyyyyyyyyxxy)(\xy.yyyyyyyyyyyyyyyxxy)(\x.x))
 
-(\x.y)((\x.y)((\x.y)((\x.y)y)))
+* Figure 2a:
 
-Figure 2b:
+  (\x.y)((\x.y)((\x.y)((\x.y)y)))
 
-((\x.x)y)((\x.x)y)((\x.x)y)((\x.x)y)
+* Figure 2b:
 
-Figure 4:
+  ((\x.x)y)((\x.x)y)((\x.x)y)((\x.x)y)
 
-(\x.xx(xx))(\x.xxy)
+* Figure 4:
 
-Figure 6:
+  (\x.xx(xx))(\x.xxy)
 
-(\xy.x(\z.yzy)x)(\x.x)(\xy.x(\z.yzy)x)
+* Figure 6:
 
-Figure 7a:
+  (\xy.x(\z.yzy)x)(\x.x)(\xy.x(\z.yzy)x)
 
-((\x.x)y)((\x.xxx)\y.y)((\x.xx)\y.y)
+* Figure 7a:
 
-Figure 7b:
+  ((\x.x)y)((\x.xxx)\y.y)((\x.xx)\y.y)
 
-((\xy.yyyyxxy)(\xy.yyyyxxy)(\x.x))(((\x.x)y)((\x.x)y))
+* Figure 7b:
+
+  ((\xy.yyyyxxy)(\xy.yyyyxxy)(\x.x))(((\x.x)y)((\x.x)y))
