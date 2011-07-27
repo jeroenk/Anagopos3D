@@ -15,19 +15,19 @@ directed algorithm, where GraphViz is limited to 2D layouts.
 The code-base of the tool also partially derives from Anagopos. The source
 code of Anagopos can be found at:
 
-  http://code.google.com/p/anagopos/
+    http://code.google.com/p/anagopos/
 
 Usage
 -----
 
 To use the tool a copy of UbiGraph is required, which can be downloaded from:
 
-  http://ubietylab.net/ubigraph/
+    http://ubietylab.net/ubigraph/
 
 After starting the UbiGraph server software (ubigraph_server), Anagopos 3D can
 be invoked with:
 
-  python src/anagopos3d.py
+    python src/anagopos3d.py
 
 The operation of the tool is similar to that of Anagopos, whose usage is
 described in [1]. Remark that not all functionality from Anapopos is present:
@@ -48,7 +48,7 @@ Possible Future Extensions
 
 * Ensure the interface does no "lock-up" during foward and backward operations.
 * UbiGraph does not seem to be supported any longer. Hence, alternative 3D
-  3D graph drawing libraries should be considered.
+  graph drawing libraries should be considered.
 
 References
 ----------
