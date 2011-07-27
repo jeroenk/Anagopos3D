@@ -205,7 +205,7 @@ class MainWindow(wx.Frame):
     def OnAbout(self,event):
         message = ANAGAPOS + " " + VERSION + "\n\n"
         message += "URL: " + URL + "\n\n"
-        message += "Niels Bjørn Bugge Grathwohl\n"
+        message += "Niels Bjoern Bugge Grathwohl\n"
         message += "Jeroen Ketema\n"
         message += "Jens Duelund Pallesen\n"
         message += "Jakob Grue Simonsen"
