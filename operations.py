@@ -31,6 +31,7 @@ from trs_terms.trs_parser import TRSParseRules as trs_parser
 from lambda_terms.lambda_term_parser import parse as lambda_term_parser
 from trs_terms.trs_term_parser import parse as trs_term_parser
 from lambda_terms.lambda_random_term import random_term as lambda_random_term
+from trs_terms.trs_random_term import random_term as trs_random_term
 
 _mode = ""
 
@@ -47,9 +48,9 @@ def set_mode(mode):
         RULE_PARSER = None
         RANDOM_TERM = lambda_random_term
     elif mode == "trs":
-        #OPS         = trs_operations
         PARSER      = trs_term_parser
         RULE_PARSER = trs_parser
+        RANDOM_TERM = trs_random_term
     else:
         raise Exception("Unsupported mode: " + mode)
 

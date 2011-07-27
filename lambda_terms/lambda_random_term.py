@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Generate a random DAG for a lambda term.
+Generate a random lambda ter,.
 '''
 
 from lambda_term_parser import Abstraction, Application, Variable
@@ -31,7 +31,7 @@ boundvars = 0
 
 def random_term(_):
     '''
-    Generate a pseude-random lambda term.
+    Generate a random lambda term.
     '''
     global freevars, boundvars
 

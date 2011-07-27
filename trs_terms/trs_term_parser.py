@@ -105,7 +105,8 @@ def get_identifier():
     while position != len(string) \
             and ((string[position] >= 'a' and string[position] <= 'z') \
                      or (string[position] >= 'A' and string[position] <= 'Z') \
-                     or (string[position] >= '0' and string[position] <= '9')):
+                     or (string[position] >= '0' and string[position] <= '9') \
+                     or string[position] == "_"):
             identifier += string[position]
             position += 1
 
@@ -115,7 +116,8 @@ def get_identifier():
 def term():
     if not (symbol >= 'a' and symbol <= 'z') \
             and not (symbol >= 'A' and symbol <= 'Z') \
-            and not (symbol >= '0' and symbol <= '9'):
+            and not (symbol >= '0' and symbol <= '9') \
+            and not symbol == "_":
         raise TRSTermParseException("Invalid symbol on input: " + symbol)
 
     identifier = get_identifier()
