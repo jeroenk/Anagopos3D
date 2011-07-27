@@ -33,7 +33,7 @@ TERM_PARSE_ERROR_COLOUR = "#BB4444"
 
 ANAGAPOS = "Anagapos 3D"
 VERSION  = "Version 1.0"
-URL      = "https://github.com/jeroenk/lambda"
+URL      = "https://github.com/jeroenk/Anagopos3D"
 
 RULE_SET_TEXT  = "Rule set: "
 BETA_REDUCTION = "beta-rule"
