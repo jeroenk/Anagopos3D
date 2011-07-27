@@ -36,6 +36,13 @@ Moreover, only the TPDB format for TRS descriptions is supported. Finally, part
 of the functionality, such as resetting the graph layout, is taken over by
 UbiGraph (see also the UbiGraph documentation).
 
+Dependencies
+------------
+
+Anagopos 3D was developed with Python 2.6 and depends on wxWidgets 2.8.
+
+The code is not likely to work with Python 3 or other versions of wxWidgets.
+
 Possible Future Extensions
 --------------------------
 
