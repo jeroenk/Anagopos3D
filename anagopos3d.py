@@ -75,8 +75,7 @@ class MainWindow(wx.Frame):
     def __init__(self, parent = None, id = -1, title = ANAGAPOS):
         style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX
 
-        wx.Frame.__init__(self, parent, id, title, size = (220, 420),
-                              style = style)
+        wx.Frame.__init__(self, parent, id, title, style = style)
 
         self.state = State()
 
@@ -199,6 +198,9 @@ class MainWindow(wx.Frame):
         menubar = wx.MenuBar()
         menubar.Append(filemenu, "&File")
         self.SetMenuBar(menubar)
+
+        # Give window its proper size
+        self.Fit()
 
     def OnAbout(self,event):
         message = ANAGAPOS + " " + VERSION + "\n\n"
