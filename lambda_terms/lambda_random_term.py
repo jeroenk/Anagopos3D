@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Generate a random lambda ter,.
+Generate a random lambda term.
 '''
 
 from lambda_term_parser import Abstraction, Application, Variable

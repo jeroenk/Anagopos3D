@@ -36,7 +36,7 @@ VERSION  = "Version 1.0"
 URL      = "https://github.com/jeroenk/lambda"
 
 RULE_SET_TEXT  = "Rule set: "
-BETA_REDUCTION = "β-rule"
+BETA_REDUCTION = "beta-rule"
 
 DISP_TERMS_TEXT = "Displayed terms: "
 DISP_STEPS_TEXT = "Displayed steps: "
@@ -64,6 +64,7 @@ class State:
         self.reducts      = []
         self.reduct_count = 0
         self.cur_reduct   = 0
+        self.changed      = False
 
         self.ubi.clear()
         self.set_vertex_style()
@@ -84,7 +85,7 @@ class MainWindow(wx.Frame):
         self.signature = None
 
         # Create the radio buttons to select between lambda calculus and TRS.
-        self.radio_lambda = wx.RadioButton(self, -1, 'λ-calculus',
+        self.radio_lambda = wx.RadioButton(self, -1, 'lambda-calculus',
                                                style = wx.RB_GROUP)
         self.radio_trs = wx.RadioButton(self, -1, 'TRS')
 
@@ -100,7 +101,7 @@ class MainWindow(wx.Frame):
         self.radio_lambda.SetValue(True) # Lambda is by default active
         operation.set_mode("lambda")
 
-        self.radio_lambda.SetToolTip(wx.ToolTip("λβ-calculus"))
+        self.radio_lambda.SetToolTip(wx.ToolTip("lambda-beta-calculus"))
         self.radio_trs.SetToolTip(wx.ToolTip("Opens file dialog to select TRS"))
 
         self.active_rule_file_text \
@@ -116,7 +117,7 @@ class MainWindow(wx.Frame):
         # Term text field
         self.term_input = wx.TextCtrl(self, 0, style = wx.TE_MULTILINE,
                                           size = (width, 100))
-        self.term_input.Bind(wx.EVT_TEXT, self.ResetTextColor)
+        self.term_input.Bind(wx.EVT_TEXT, self.TextChange)
 
         # Buttons
         draw_button     = wx.Button(self, 0, "Reset Graph", size = button_size)
@@ -268,8 +269,9 @@ class MainWindow(wx.Frame):
     def OnExit(self, event):
         self.Close(True)
 
-    def ResetTextColor(self, event):
+    def TextChange(self, event):
         self.term_input.SetBackgroundColour("#FFFFFF")
+        self.state.changed = True
 
     def ColorInitial(self):
         latest  = self.state.cur_term == 0 and self.new_checkbox.GetValue()
@@ -350,7 +352,7 @@ class MainWindow(wx.Frame):
         reduct_count = self.forward_spinner.GetValue()
         count = reduct_count
 
-        if self.state.iterator == None:
+        if self.state.iterator == None or self.state.changed:
             self.ResetGraph(None)
             reduct_count -= 1
 
@@ -397,7 +399,7 @@ class MainWindow(wx.Frame):
 
     def Backward(self, event):
         self.SetStatusText("")
-        if self.state.iterator == None:
+        if self.state.iterator == None or self.state.changed:
             self.ResetGraph(None)
             return
 
@@ -438,16 +440,12 @@ class MainWindow(wx.Frame):
 
     def StartCheck(self, event):
         if self.state.iterator == None:
-            self.ResetGraph(None)
-
-            if self.state.iterator == None:
                 return
 
         self.ColorInitial()
 
     def NewCheck(self, event):
         if self.state.iterator == None:
-            self.StartCheck(None)
             return
 
         self.ColorLatest()
@@ -456,6 +454,7 @@ class MainWindow(wx.Frame):
     def Generate(self, event):
         term_string = operation.random_term(self.signature)
         self.term_input.SetValue(term_string)
+        self.state.changed = True
 
 app   = wx.PySimpleApp()
 frame = MainWindow()
