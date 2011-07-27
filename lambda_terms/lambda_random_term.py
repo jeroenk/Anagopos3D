@@ -78,6 +78,6 @@ def random_term(_):
     p = {"abstraction" : 0.6,
          "application" : 0.4,
          "variable"    : 0.0
-         }
+        }
 
     return str(_node(p, []))

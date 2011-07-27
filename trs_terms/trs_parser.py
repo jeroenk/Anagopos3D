@@ -436,7 +436,9 @@ def TRSParseRules(file_name):
 
     try:
         parser.ParseFile(f)
+        f.close()
     except xml.parsers.expat.ExpatError as exception:
+        f.close()
         raise TRSParseException(str(exception))
 
     rule_set = []

@@ -12,15 +12,15 @@ Anagopos, which is based on GraphViz, graph drawing in Anagopos 3D depends on
 capabilities of UbiGraph. UbiGraph does 3D layout of graphs based on a force-
 directed algorithm, where GraphViz is limited to 2D layouts.
 
-The code-base of the tool also partially derives from Anagopos, whose source
-code can be found at:
+The code-base of the tool also partially derives from Anagopos. The source
+code of Anagopos can be found at:
 
   http://code.google.com/p/anagopos/
 
 Usage
 -----
 
-To use the tool a copy of UbiGraph is required, which can be downloaded from
+To use the tool a copy of UbiGraph is required, which can be downloaded from:
 
   http://ubietylab.net/ubigraph/
 
@@ -39,8 +39,6 @@ UbiGraph (see also the UbiGraph documentation).
 Possible Future Extensions
 --------------------------
 
-* The code currently makes use of a number of global variables, this should
-  be cleaned-up.
 * Ensure the interface does no "lock-up" during foward and backward operations.
 * UbiGraph does not seem to be supported any longer. Hence, alternative 3D
   3D graph drawing libraries should be considered.
@@ -52,3 +50,4 @@ References
     A Reduction Graph Visualizer for Term Rewriting and Lambda Calculus.
     Proceedings of the 22nd International Conference on Rewriting Techniques
     and Applications (RTA 2011), volume 10 of LIPIcs, pages 61-70.
+
