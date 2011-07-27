@@ -27,7 +27,7 @@ To use the tool a copy of UbiGraph is required, which can be downloaded from:
 After starting the UbiGraph server software (ubigraph_server), Anagopos 3D can
 be invoked with:
 
-  python anagopos3d.py
+  python src/anagopos3d.py
 
 The operation of the tool is similar to that of Anagopos, whose usage is
 described in [1]. Remark that not all functionality from Anapopos is present:
