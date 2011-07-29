@@ -21,10 +21,7 @@ from collections import deque
 class LambdaException(Exception):
     pass
 
-class LambdaTerm:
-    def __init__(self):
-        raise LambdaException("Not implemented")
-
+class LambdaTerm(object):
     def isAbs(self):
         return False
 
@@ -84,6 +81,8 @@ class LambdaTerm:
 
 class LambdaAbs(LambdaTerm):
     def __init__(self, subterm):
+        super(LambdaAbs, self).__init__()
+
         self.subterm = subterm
 
     def isAbs(self):
@@ -126,6 +125,8 @@ class LambdaAbs(LambdaTerm):
 
 class LambdaApp(LambdaTerm):
     def __init__(self, left, right):
+        super(LambdaApp, self).__init__()
+
         self.left  = left
         self.right = right
 
@@ -174,7 +175,7 @@ class LambdaApp(LambdaTerm):
             right = self.right.reduce(position[1:])
             return LambdaApp(left, right)
         else:
-            raise lambdaException("Invalid operation")
+            raise LambdaException("Invalid operation")
 
     def isEqual(self, term):
         if not term.isApp():
@@ -192,6 +193,8 @@ class LambdaApp(LambdaTerm):
 
 class LambdaVar(LambdaTerm):
     def __init__(self, value):
+        super(LambdaVar, self).__init__()
+
         self.value = value
 
     def isVar(self):

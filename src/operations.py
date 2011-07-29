@@ -33,35 +33,39 @@ from trs_terms.trs_term_parser import parse as trs_term_parser
 from lambda_terms.lambda_random_term import random_term as lambda_random_term
 from trs_terms.trs_random_term import random_term as trs_random_term
 
-_mode = ""
+mode = ""
 
-def set_mode(mode):
+PARSER      = None
+RULE_PARSER = None
+RANDOM_TERM = None
+
+def set_mode(mode_in):
     '''
     Set the mode, i.e. choose which parser and associated operations to use:
     "trs" or "lambda".
     '''
 
-    global RANDOM_TERM, PARSER, RULE_PARSER, _mode
+    global mode, PARSER, RULE_PARSER, RANDOM_TERM
 
-    if mode == "lambda":
+    if mode_in == "lambda":
         PARSER      = lambda_term_parser
         RULE_PARSER = None
         RANDOM_TERM = lambda_random_term
-    elif mode == "trs":
+    elif mode_in == "trs":
         PARSER      = trs_term_parser
         RULE_PARSER = trs_parser
         RANDOM_TERM = trs_random_term
     else:
-        raise Exception("Unsupported mode: " + mode)
+        raise Exception("Unsupported mode: " + mode_in)
 
-    _mode = mode
+    mode = mode_in
 
 def get_mode():
-    return _mode
+    return mode
 
 def parse_rule_set(file_name):
     if RULE_PARSER == None:
-        raise Exception("Rule set parsing not supported in " + _mode + " mode")
+        raise Exception("Rule set parsing not supported in " + mode + " mode")
 
     return RULE_PARSER(file_name)
 

@@ -36,24 +36,21 @@ def random_term(signature):
 
     varcount = 0
 
-    def _node(p, sig):
+    def node(p, signature):
         global varcount
 
-        r = random.uniform(0,1)
+        r = random.uniform(0, 1)
 
         if r < p["functionsymbol"]:
-            _p = {}
-            _p["variable"]       = p["variable"] + 0.09
-            _p["functionsymbol"] = p["functionsymbol"] - 0.02
+            p_new = {}
+            p_new["variable"]       = p["variable"] + 0.09
+            p_new["functionsymbol"] = p["functionsymbol"] - 0.02
 
-            i = random.randint(0, len(sig) - 1)
-            a = sig[i][1]
-            s = []
+            i = random.randint(0, len(signature) - 1)
+            arity = sig[i][1]
+            subterms = [node(p_new, signature) for _ in range(arity)]
 
-            for _ in range(a):
-                s.append(_node(_p, sig))
-
-            term = Function(sig[i][0], s)
+            term = Function(signature[i][0], subterms)
         else:
             name = "v" + str(varcount)
             varcount += 1
@@ -75,4 +72,4 @@ def random_term(signature):
     if len(sig) == 0:
         return "v"
     else:
-        return str(_node(p, sig))
+        return str(node(p, sig))

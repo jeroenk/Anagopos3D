@@ -74,7 +74,7 @@ term          = None
 def reset_global():
     global parser, level, sublevel, trslevel, siglevel, funclevel, ruleslevel, \
         rulelevel, termlevel, signature, func_symbol, arity, rules, lhs, rhs, \
-        symbolstack, subterms, subter,_count, term
+        symbolstack, subterms, subterm_count, term
 
     parser = xml.parsers.expat.ParserCreate()
 
@@ -101,16 +101,14 @@ def reset_global():
     subterm_count = []
     term          = None
 
-def start_problem(name, attrs):
+def start_problem(name, _):
     global level
 
     # We ignore whether we are dealing with a "termination" or "complexity"
     # problem. In both cases we are dealing with a TRS after all.
     level = lower_level
 
-def start_term(name, attrs):
-    global termlevel, subterm_count
-
+def start_term(name, _):
     length = len(termlevel)
 
     if length == 0 or termlevel[length - 1] == fun_arg_level:
@@ -164,7 +162,7 @@ def start_rules(name, attrs):
         start_rule(name, attrs)
     # We should not reach this point in case of relative rules.
 
-def start_signature(name, attrs):
+def start_signature(name, _):
     global siglevel, funclevel
 
     if siglevel == None:
@@ -239,11 +237,11 @@ def start_element(name, attrs):
         start_lower(name, attrs)
 
 def end_term(name):
-    global termlevel, symbolstack, subterms, term, subterm_count, signature
+    global subterms, term
 
-    level = termlevel.pop()
+    current_level = termlevel.pop()
 
-    if level == fun_level:
+    if current_level == fun_level:
         if name == "funapp":
             count = subterm_count.pop()
             f = symbolstack.pop()
@@ -265,15 +263,15 @@ def end_term(name):
             term = TRSFun(f_symbol, f_subterms)
         else:
             raise TRSParseException("Unexpected element end " + name)
-    elif level == fun_name_level:
+    elif current_level == fun_name_level:
         if name != "name":
             raise TRSParseException("Unexpected element end " + name)
-    elif level == fun_arg_level:
+    elif current_level == fun_arg_level:
         if name == "arg":
             subterms.append(term)
         else:
             raise TRSParseException("Unexpected element end " + name)
-    elif level == var_level:
+    elif current_level == var_level:
         term = TRSVar(symbolstack.pop())
     else:
         raise TRSParseException("Unexpected element end " + name)
@@ -297,7 +295,7 @@ def end_rule(name):
         raise TRSParseException("Unexpected element end " + name)
 
 def end_rules(name):
-    global ruleslevel, rules, lhs, rhs
+    global ruleslevel, lhs, rhs
 
     if ruleslevel == rule_level:
         if name == "rule":
@@ -314,7 +312,7 @@ def end_rules(name):
         raise TRSParseException("Unexpected element end " + name)
 
 def end_signature(name):
-    global siglevel, funclevel, func_symbol, arity, signature
+    global siglevel, funclevel, func_symbol, arity
 
     if siglevel == func_level:
         if name == "funcsym":
@@ -322,7 +320,8 @@ def end_signature(name):
                 if func_symbol not in signature:
                     signature[func_symbol] = arity
                 elif signature[func_symbol] != arity:
-                    raise TRSParseException("Arity of \"" + f +"\" is " + \
+                    raise TRSParseException("Arity of \"" + func_symbol \
+                                                +"\" is " + \
                                                 str(signature[func_symbol]) + \
                                                 ", not " + str(arity))
             else:
@@ -396,7 +395,7 @@ def end_lower(name):
             sublevel = None
         # Ignore any subsections
     else:
-        raise TRSParseError("Unexpected element end " + name)
+        raise TRSParseException("Unexpected element end " + name)
 
 def end_element(name):
     if level == lower_level:

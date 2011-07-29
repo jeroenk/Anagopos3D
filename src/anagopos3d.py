@@ -46,7 +46,22 @@ class State:
         self.rule_dir = osenviron["HOME"]
 
         self.ubi = Ubigraph()
-        self.reset_terms()
+
+        self.iterator     = None
+        self.terms        = {}
+        self.term_count   = 0
+        self.cur_term     = 0
+        self.reducts      = []
+        self.reduct_count = 0
+        self.cur_reduct   = 0
+        self.changed      = False
+
+        self.ubi.clear()
+        self.set_vertex_style()
+        self.set_edge_style()
+
+        self.vertex = None
+        self.edge   = None
 
     def set_vertex_style(self):
         self.vertex = self.ubi.newVertexStyle(shape = "sphere",
@@ -72,10 +87,10 @@ class State:
 
 class MainWindow(wx.Frame):
 
-    def __init__(self, parent = None, id = -1, title = ANAGAPOS):
+    def __init__(self, parent = None, ident = -1, title = ANAGAPOS):
         style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX
 
-        wx.Frame.__init__(self, parent, id, title, style = style)
+        wx.Frame.__init__(self, parent, ident, title, style = style)
 
         self.state = State()
 
@@ -202,7 +217,7 @@ class MainWindow(wx.Frame):
         # Give window its proper size
         self.Fit()
 
-    def OnAbout(self,event):
+    def OnAbout(self, _):
         message = ANAGAPOS + " " + VERSION + "\n\n"
         message += "URL: " + URL + "\n\n"
         message += "Niels Bjoern Bugge Grathwohl\n"
@@ -245,7 +260,7 @@ class MainWindow(wx.Frame):
 
             self.rule_name = rulename
 
-    def SetRadioVal(self, event):
+    def SetRadioVal(self, _):
         self.state.reset_terms()
 
         if self.radio_lambda.GetValue():
@@ -268,10 +283,10 @@ class MainWindow(wx.Frame):
     def UpdateRuleInfo(self, text):
         self.active_rule_file_text.SetLabel(RULE_SET_TEXT + text)
 
-    def OnExit(self, event):
+    def OnExit(self, _):
         self.Close(True)
 
-    def TextChange(self, event):
+    def TextChange(self, _):
         self.term_input.SetBackgroundColour("#FFFFFF")
         self.state.changed = True
 
@@ -301,7 +316,7 @@ class MainWindow(wx.Frame):
         else:
             self.state.terms[self.state.cur_term].set(color = "#ff0000")
 
-    def ResetGraph(self, event):
+    def ResetGraph(self, _):
         self.state.reset_terms()
         term_string = self.term_input.GetValue()
 
@@ -317,7 +332,7 @@ class MainWindow(wx.Frame):
 
         term.addRuleSetForIter(self.rule_set)
         self.state.iterator = iter(term)
-        (term, number, previous, _) = self.state.iterator.next()
+        (term, number, _, _) = self.state.iterator.next()
         vertex = self.state.ubi.newVertex(style = self.state.vertex)
         self.state.terms[number] = vertex
         self.state.term_count = 1
@@ -349,7 +364,7 @@ class MainWindow(wx.Frame):
         self.state.cur_reduct += 1
         return (new_reduct, number, previous, new_dst)
 
-    def Forward(self, event):
+    def Forward(self, _):
         self.SetStatusText("")
         reduct_count = self.forward_spinner.GetValue()
         count = reduct_count
@@ -399,7 +414,7 @@ class MainWindow(wx.Frame):
         except StopIteration:
             self.SetStatusText("Graph complete")
 
-    def Backward(self, event):
+    def Backward(self, _):
         self.SetStatusText("")
         if self.state.iterator == None or self.state.changed:
             self.ResetGraph(None)
@@ -440,20 +455,16 @@ class MainWindow(wx.Frame):
             self.SetStatusText("Removed " + str(count) + " steps")
 
 
-    def StartCheck(self, event):
-        if self.state.iterator == None:
-                return
+    def StartCheck(self, _):
+        if self.state.iterator != None:
+            self.ColorInitial()
 
-        self.ColorInitial()
-
-    def NewCheck(self, event):
-        if self.state.iterator == None:
-            return
-
-        self.ColorLatest()
+    def NewCheck(self, _):
+        if self.state.iterator != None:
+            self.ColorLatest()
 
 
-    def Generate(self, event):
+    def Generate(self, _):
         term_string = operation.random_term(self.signature)
         self.term_input.SetValue(term_string)
         self.state.changed = True
@@ -463,6 +474,3 @@ frame = MainWindow()
 
 frame.Show(True)
 app.MainLoop()
-
-del frame
-del app

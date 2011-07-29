@@ -21,7 +21,7 @@ from collections import deque
 class TRSException(Exception):
     pass
 
-class TRSFunctionSymbol:
+class TRSFunctionSymbol(object):
     def __init__(self, symbol, arity):
         self.symbol = symbol
         self.arity  = arity
@@ -53,9 +53,9 @@ class TRSFunctionSymbol:
     def __str__(self):
         return self.symbol
 
-class TRSTerm:
+class TRSTerm(object):
     def __init__(self):
-        raise TRSException("Not implemented")
+        self.rule_set = None
 
     def isFun(self):
         return False
@@ -110,6 +110,8 @@ class TRSTerm:
 
 class TRSFun(TRSTerm):
     def __init__(self, symbol, subterms):
+        super(TRSFun, self).__init__()
+
         if len(subterms) != symbol.getArity():
             raise TRSException("Number of subterms different from arity")
 
@@ -137,7 +139,7 @@ class TRSFun(TRSTerm):
             for variable in subterm_substitution:
                 if variable not in substitution:
                     substitution[variable] = subterm_substitution[variable]
-                elif subterm_substitution[variable] != substition[variable]:
+                elif subterm_substitution[variable] != substitution[variable]:
                     return None
 
         return substitution
@@ -236,6 +238,8 @@ class TRSFun(TRSTerm):
 
 class TRSVar(TRSTerm):
     def __init__(self, variable):
+        super(TRSVar, self).__init__()
+
         self.variable = variable
 
     def isVar(self):
@@ -284,6 +288,9 @@ class TRSTermIterator:
         self.count    = 0
         self.reducts  = deque([(term, 0, -1, True)])
         self.rule_set = rule_set
+
+        if rule_set == None:
+            raise TRSException("No rule set given")
 
     def __iter__(self):
         return TRSTermIterator(self.term, self.rule_set)

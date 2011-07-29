@@ -26,18 +26,20 @@ signature = None
 class TRSTermParseException(Exception):
     pass
 
-class Term:
+class Term(object):
     def toString(self):
-        raise LambdaParseException("Not implemented")
+        raise TRSTermParseException("Not implemented")
 
     def convert(self):
-        raise LambdaParseException("Not implemented")
+        raise TRSTermParseException("Not implemented")
 
     def __str__(self):
         return self.toString()
 
 class Function(Term):
     def __init__(self, symbol, subterms):
+        super(Function, self).__init__()
+
         self.symbol   = symbol
         self.subterms = subterms
 
@@ -71,6 +73,8 @@ class Function(Term):
 
 class Variable(Term):
     def __init__(self, variable):
+        super(Variable, self).__init__()
+
         self.variable = variable
 
     def toString(self):
@@ -90,8 +94,8 @@ def get_symbol():
         position += 1
 
     if position == len(string):
-       symbol = '\0'
-       return
+        symbol = '\0'
+        return
 
     symbol = string[position]
     position += 1
@@ -107,8 +111,8 @@ def get_identifier():
                      or (string[position] >= 'A' and string[position] <= 'Z') \
                      or (string[position] >= '0' and string[position] <= '9') \
                      or string[position] == "_"):
-            identifier += string[position]
-            position += 1
+        identifier += string[position]
+        position += 1
 
     get_symbol()
     return identifier

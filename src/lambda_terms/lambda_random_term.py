@@ -38,34 +38,35 @@ def random_term(_):
     freevars = 0
     boundvars = 0
 
-    def _node(p, boundlist):
+    def node(p, boundlist):
         global freevars, boundvars
 
-        r = random.uniform(0,1)
+        r = random.uniform(0, 1)
 
         if r < p["abstraction"]:
-            _p = {}
-            _p["variable"]    = p["variable"] + 0.09
-            _p["abstraction"] = p["abstraction"] - 0.07
-            _p["application"] = p["application"] + 0.02
+            p_new = {}
+            p_new["variable"]    = p["variable"] + 0.09
+            p_new["abstraction"] = p["abstraction"] - 0.07
+            p_new["application"] = p["application"] + 0.02
 
             b = "b" + str(boundvars)
             boundvars += 1
             term = Abstraction(Variable(b))
-            term.setSubterm(_node(_p, boundlist + [b]))
+            term.setSubterm(node(p_new, boundlist + [b]))
         elif r < p["abstraction"] + p["application"]:
-            _lp = {}
-            _lp["abstraction"] = p["abstraction"] + 0.04
-            _lp["application"] = p["application"] - 0.06
-            _lp["variable"]    = p["variable"] + 0.02
-            _rp = {}
-            _rp["abstraction"] = p["abstraction"] + 0.02
-            _rp["application"] = p["application"] - 0.02
-            _rp["variable"]    = p["variable"]
+            p_left = {}
+            p_left["abstraction"] = p["abstraction"] + 0.04
+            p_left["application"] = p["application"] - 0.06
+            p_left["variable"]    = p["variable"] + 0.02
+            p_right = {}
+            p_right["abstraction"] = p["abstraction"] + 0.02
+            p_right["application"] = p["application"] - 0.02
+            p_right["variable"]    = p["variable"]
 
-            term = Application(_node(_lp, boundlist), _node(_rp, boundlist))
+            term = Application(node(p_left, boundlist), \
+                                   node(p_right, boundlist))
         else:
-            if random.uniform(0,1) < 0.95 and not len(boundlist) == 0:
+            if random.uniform(0, 1) < 0.95 and not len(boundlist) == 0:
                 name = boundlist[random.randint(0, len(boundlist) - 1)]
             else:
                 name = "f" + str(freevars)
@@ -80,4 +81,4 @@ def random_term(_):
          "variable"    : 0.0
         }
 
-    return str(_node(p, []))
+    return str(node(p, []))

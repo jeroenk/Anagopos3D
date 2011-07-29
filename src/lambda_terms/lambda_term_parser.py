@@ -25,7 +25,7 @@ symbol   = None
 class LambdaTermParseException(Exception):
     pass
 
-class Term:
+class Term(object):
     def toString(self):
         raise LambdaTermParseException("Not implemented")
 
@@ -40,6 +40,8 @@ class Term:
 
 class Application(Term):
     def __init__(self, left, right):
+        super(Application, self).__init__()
+
         self.left  = left
         self.right = right
 
@@ -58,6 +60,8 @@ class Application(Term):
 
 class Abstraction(Term):
     def __init__(self, var):
+        super(Abstraction, self).__init__()
+
         self.variable = var
         self.subterm  = None
 
@@ -84,18 +88,20 @@ class Abstraction(Term):
         return LambdaAbs(self.subterm.convert(free_vars_new))
 
 class Variable(Term):
-    def __init__(self, string):
-        self.string = string
+    def __init__(self, variable):
+        super(Variable, self).__init__()
+
+        self.variable = variable
 
     def toString(self):
-        return self.string
+        return self.variable
 
     def getFreeVars(self):
-        return set([self.string])
+        return set([self.variable])
 
     def convert(self, free_vars):
-        if self.string in free_vars:
-            return LambdaVar(free_vars.index(self.string))
+        if self.variable in free_vars:
+            return LambdaVar(free_vars.index(self.variable))
         else:
             raise LambdaTermParseException("Non-convertible variable found")
 
@@ -110,8 +116,8 @@ def get_symbol():
         position += 1
 
     if position == len(string):
-       symbol = '\0'
-       return
+        symbol = '\0'
+        return
 
     symbol = string[position]
     position += 1
@@ -120,14 +126,14 @@ def variable():
     if not (symbol >= 'a' and symbol <= 'z'):
         raise LambdaTermParseException("Invalid symbol on input: " + symbol)
 
-    string = symbol[:]
+    variable_string = symbol[:]
     get_symbol() # consumes letter
 
     while (symbol >= '0' and symbol <= '9'):
-        string += symbol
+        variable_string += symbol
         get_symbol() # consumes number
 
-    var = Variable(string)
+    var = Variable(variable_string)
     return var
 
 def abstraction():
@@ -139,10 +145,10 @@ def abstraction():
     top = bottom = Abstraction(var)
 
     while symbol != '.':
-        var = variable()
-        ab  = Abstraction(var)
-        bottom.setSubterm(ab)
-        bottom = ab
+        var   = variable()
+        abstr = Abstraction(var)
+        bottom.setSubterm(abstr)
+        bottom = abstr
 
     get_symbol() # consumes dot
     subterm = term()
