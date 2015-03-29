@@ -15,7 +15,7 @@ directed algorithm, where GraphViz is limited to 2D layouts.
 The code-base of the tool also partially derives from Anagopos. The source
 code of Anagopos can be found at:
 
-    http://code.google.com/p/anagopos/
+    https://github.com/bjornbugge/anagopos
 
 Usage
 -----
